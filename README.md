@@ -7,7 +7,7 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin-Android%20Native-purple?logo=kotlin)](#)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](#)
 
-**SpotiGuard** es una solución de protección multimedia independiente, ultrarrápida y multiplataforma para **PC (Windows)** y **Móvil (Android)** que neutraliza automáticamente los anuncios publicitarios de Spotify mediante la técnica de **Reinicio Rápido Asistido (Kill & Relaunch Bypass con Windows SMTC / Android MediaController)**.
+**SpotiGuard** es una solución de protección multimedia independiente, ultrarrápida y multiplataforma para **PC (Windows)** y **Móvil (Android)** que neutraliza automáticamente los anuncios publicitarios de Spotify mediante la técnica de **Reinicio Rápido Asistido (Kill & Relaunch Bypass con Windows SMTC / Android Watchdog Controller)**.
 
 El sistema se ejecuta en segundo plano y **se activa de forma 100% autónoma en cuanto detecta que Spotify se ha iniciado**, tanto en tu ordenador como en tu dispositivo móvil.
 
@@ -15,12 +15,12 @@ El sistema se ejecuta en segundo plano y **se activa de forma 100% autónoma en 
 
 ### 📥 Descargas Directas Listas para Usar
 
-* 📱 **Móvil (Android)**: **[Descargar SpotiGuard-1.0.2-12.apk](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.2-12/SpotiGuard-1.0.2-12.apk)** *(4.51 MB — Exclusivo Reinicio Rápido y Salto Automático al abrir Spotify o encender el móvil, cero permisos invasivos, compatible con Android 8 a 15)*
+* 📱 **Móvil (Android)**: **[Descargar SpotiGuard-1.0.3-13.apk](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.3-13/SpotiGuard-1.0.3-13.apk)** *(4.51 MB — Watchdog anti-anuncios silenciosos, detección dinámica de requisitos en interfaz, auto-activación al abrir Spotify o encender el móvil, compatible con Android 8 a 15)*
 * 🖥️ **PC (Windows)**: **[Descargar SpotiGuard-Windows-1.0.0-4.zip](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.0-4/SpotiGuard-Windows-1.0.0-4.zip)** *(47.9 MB — Paquete portable con ejecutable de 64 bits y reanudación Windows SMTC)*
 * 🚀 **Lanzador Conjunto en PC (1 Clic)**: **[`Spotify (Protegido con SpotiGuard).lnk`](Spotify%20(Protegido%20con%20SpotiGuard).lnk)** *(Abre Spotify y SpotiGuard juntos de forma simultánea)*
 * 🔌 **Instalador Rápido por ADB para Android desde PC**: **[`instalar_android.bat`](instalar_android.bat)** *(Instalación en 1 clic en tu móvil vía cable USB o Wi-Fi sin advertencias de navegador)*
 * 🌐 **Repositorio Oficial en GitHub**: **[https://github.com/Atm0027/SpotiGuard](https://github.com/Atm0027/SpotiGuard)**
-* 🚀 **Última Release Oficial (v1.0.2-12)**: **[https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.2-12](https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.2-12)**
+* 🚀 **Última Release Oficial (v1.0.3-13)**: **[https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.3-13](https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.3-13)**
 
 ---
 
@@ -35,38 +35,33 @@ Tanto en **Windows** como en **Android**, SpotiGuard está diseñado para funcio
 
 ### 📱 En Móvil (Android):
 1. **Auto-inicio al encender el móvil (`BootReceiver`)**: SpotiGuard se reactiva automáticamente al reiniciar el teléfono y permanece en espera de bajo consumo.
-2. **Auto-despertar con Spotify (`SpotifyLaunchReceiver`)**: En cuanto Spotify empieza a reproducir música o un anuncio, Android emite el evento `com.spotify.music.metadatachanged` y SpotiGuard se activa automáticamente si no estaba corriendo.
-3. **Lanzador Directo desde la App**: Si abres SpotiGuard y pulsas **"🚀 Abrir Spotify"**, el servicio se inicia y abre Spotify en pantalla simultáneamente (compatible con paquetes oficiales y Spotify Lite).
+2. **Auto-despertar con Spotify (`SpotifyLaunchReceiver`)**: En cuanto Spotify empieza a reproducir música, Android emite el evento `com.spotify.music.metadatachanged` y SpotiGuard se activa automáticamente si no estaba corriendo.
+3. **Lanzador Directo desde la App**: Si abres SpotiGuard y pulsas **"🚀 Abrir Spotify"**, el servicio se inicia y abre Spotify en pantalla simultáneamente.
+4. **Detección Dinámica de Requisitos en Interfaz**: Los botones de *"Estado de emisión"* y *"Optimización de batería"* **se ocultan automáticamente de la app en cuanto el sistema detecta que están activados**, dejando la interfaz limpia con un indicador de verificación verde.
 
 ---
 
 ## 🔬 ¿Cómo Funciona Técnicamente el Salto y la Reanudación?
 
-### 1. El Truco del Cierre y Relanzamiento (Bypass Trick)
-* **Inyección Volátil**: En las cuentas Spotify Free, las cuñas publicitarias se insertan de manera transitoria en la memoria RAM y el búfer del reproductor.
-* **Detección Inmediata y Multilingüe**:
-  - En **PC**, combina la inspección de la API nativa de Windows **System Media Transport Controls (SMTC / WinRT)**, títulos de ventanas Win32 y sesiones de audio activas (**CoreAudio / pycaw**). Reconoce cuñas publicitarias en español (`"ESCÚCHALO AHORA"`, `"Escucha sin límites"`, `"Hazte Premium"`, `"Publicidad"`, `"Anuncio"`), inglés (`"Advertisement"`, `"Spotify Free"`) y formatos internacionales.
-  - En **Móvil (Android)**, utiliza un **Foreground Service** (`SpotiGuardService`) que escucha de forma dinámica los eventos nativos de reproducción emitidos por Spotify (`com.spotify.music.metadatachanged`).
-  - **Nueva Heurística Universal Anti-Anuncios**: En Spotify Free, muchos anuncios comerciales (por ejemplo, campañas de patrocinadores como Vinted, Amazon, automoción) rellenan `artist` con el nombre del anunciante y `album` con la campaña. SpotiGuard analiza el URI canónico del elemento: cualquier contenido cuyo identificador no empiece por `spotify:track:` (canción legítima) o `spotify:episode:` (podcast) es interceptado inmediatamente como anuncio comercial.
+### 1. El Gran Descubrimiento: ¿Por qué Spotify cuela anuncios silenciosos en Android?
+* **Supresión deliberada de broadcasts en anuncios**: Spotify en Android **NO emite ningún evento de broadcast cuando empieza una cuña publicitaria**. Únicamente emite eventos cuando comienza una canción real.
+* **El fallo de los detectores pasivos**: Si una aplicación solo espera a recibir un broadcast para actuar, Spotify reproduce el anuncio completo en silencio absoluto para el sistema de broadcasts.
+* **La Solución SpotiGuard: Watchdog de Precisión por Expiración de Pista**:
+  - Al sonar una canción legítima, SpotiGuard lee su duración (`length` en milisegundos) y su posición de reproducción (`playbackPosition`).
+  - SpotiGuard programa un temporizador interno (*Watchdog*) con la cuenta atrás exacta del final de la pista (`remainingMs + 350ms`).
+  - Si al expirar la canción no llega inmediatamente una nueva pista legítima, SpotiGuard deduce con 100% de certeza que **ha comenzado una cuña publicitaria**.
+  - De inmediato ejecuta el salto automático: **Kill -> Relaunch -> Purge Buffer (`Next Track`) -> Play**.
 
-### 2. Arquitectura de Salto Puro en Android (Kill -> Relaunch -> Purge Buffer -> Play)
-A petición de los usuarios, en Android se eliminó completamente la opción de silenciar (*mute*). La aplicación ahora ejecuta de forma invariable la secuencia de salto definitivo:
-1. **Detención y Cierre Inmediato**: Envía `KEYCODE_MEDIA_STOP` y ejecuta `killBackgroundProcesses("com.spotify.music")` para liquidar al instante la memoria del anuncio.
-2. **Espera de enfriamiento (500 ms)**: Permite que el sistema libere los recursos de audio.
-3. **Relanzamiento de Spotify**: Abre Spotify de forma limpia mediante su Intent principal (`FLAG_ACTIVITY_NEW_TASK | FLAG_ACTIVITY_REORDER_TO_FRONT`).
-4. **Purga del Búfer del Anuncio (`KEYCODE_MEDIA_NEXT`)**: Al cabo de 1000 ms, envía un evento de salto a la siguiente pista. Esto descarta el anuncio congelado en la cola del reproductor y posiciona la siguiente canción real.
-5. **Reanudación (`KEYCODE_MEDIA_PLAY`)**: 300 ms después, envía la señal de reproducción para arrancar la música sin pausas ni interacción del usuario.
+### 2. Detección Dual en Android
+1. **Watchdog de Fin de Canción**: Captura todas las cuñas publicitarias silenciosas entre canciones.
+2. **Detección Reactiva por ID y Metadatos**: Si Spotify emite algún evento publicitario (cuñas de patrocinadores con IDs no estándar, marcas publicitarias en artista/álbum como Vinted o Amazon, o palabras clave como "Publicidad", "Advertisement", "Spotify Free"), SpotiGuard lo intercepta al milisegundo sin esperar al temporizador.
 
-### 3. Arquitectura de Reanudación de Reproducción en PC
-Tras analizar en profundidad el comportamiento de Spotify en Windows 10/11:
-1. **Eliminación Atómica de Lanzadores Huérfanos**:
-   - SpotiGuard termina de forma atómica tanto `Spotify.exe` como `SpotifyLauncher.exe`, previniendo el error `#32770` (*"The Spotify application is not responding"*).
-2. **Purga del Búfer del Anuncio Interrumpido (`Next Track`)**:
-   - Envía primero `Next Track` (`VK_MEDIA_NEXT_TRACK` / `APPCOMMAND_MEDIA_NEXTTRACK`), forzando a Spotify a descartar el anuncio en cola.
-3. **Reanudación Nativa con Windows SMTC (`winsdk`)**:
-   - Tubería de 3 capas (SMTC Nativo WinRT -> Mensajes Win32 Directos `WM_APPCOMMAND` -> Inyección de Teclas Extendidas de Hardware) con verificación activa en bucle hasta confirmar `PlaybackStatus = Playing`.
-4. **Protección Contra Instancias Múltiples (Mutex de Windows)**:
-   - `CreateMutexW` con nombre global (`SpotiGuard_SingleInstance_App_Mutex`). La segunda instancia trae la existente al frente y se cierra silenciosamente.
+### 3. Secuencia de Salto Atómico en Android
+1. **Detención inmediata**: Envío de `KEYCODE_MEDIA_PAUSE` y `KEYCODE_MEDIA_STOP` mediante `AudioManager` y direct intents a `com.spotify.music`.
+2. **Cierre de procesos**: `killBackgroundProcesses("com.spotify.music")`.
+3. **Relanzamiento**: Apertura limpia de Spotify tras 500 ms.
+4. **Purga del búfer**: Envío de `KEYCODE_MEDIA_NEXT` a los 1000 ms (elimina el anuncio congelado en cola).
+5. **Reanudación automática**: Envío de `KEYCODE_MEDIA_PLAY` a los 300 ms (arranca la siguiente canción real).
 
 ---
 
@@ -83,58 +78,37 @@ Ubicada en la carpeta [`pc/`](pc/).
   1. **Reinicio Rápido (Skip & Relaunch)**: Cierra y reabre Spotify instantáneamente en ~2-4 segundos, saltando a la siguiente canción real.
   2. **Silenciador Furtivo (Stealth Mute)**: Muta al 0% el volumen exclusivo de Spotify mientras dura el anuncio y lo restablece exactamente cuando empieza la canción.
 
-### 🚀 Ejecución de la Aplicación en PC:
-* **Opción Rápida (Lanzar Spotify con Protección en 1 Clic)**: 
-  - Haz doble clic en: **[`Spotify (Protegido con SpotiGuard).lnk`](Spotify%20(Protegido%20con%20SpotiGuard).lnk)**
-* **Abrir solo SpotiGuard**:
-  - Haz doble clic en: **[`SpotiSkip (Iniciar App).lnk`](SpotiSkip%20(Iniciar%20App).lnk)** o **[`dist/SpotiSkip/SpotiSkip.exe`](dist/SpotiSkip/SpotiSkip.exe)**
-
 ---
 
 ## 📱 Aplicación para Móvil (Android)
 
 Ubicada en la carpeta [`mobile/`](mobile/). Proyecto nativo completo en **Kotlin**.
 
-### Características Principales:
-* **Auto-Activación con Spotify**: Escucha las emisiones nativas (`com.spotify.music.metadatachanged`, `playbackstatechanged`, `queuechanged`) y se activa sola.
-* **Servicio en Primer Plano Seguro (`SpotiGuardService`)**: Servicio oficial `mediaPlayback` con notificación de estado de baja prioridad. Garantiza que Android nunca detenga el servicio en segundo plano.
-* **Receptor de Arranque (`BootReceiver`)**: Se reactiva solo al encender el teléfono.
-* **Modo Exclusivo de Operación**:
-  - **Reinicio Rápido y Salto Automático (Kill -> Relaunch -> Play)**: Cierra Spotify, lo relanza en segundo plano, purga el anuncio de la cola con `Next Track` y reanuda la música con `Play`. Se ha retirado completamente el modo mute para cumplir con la experiencia sin anuncios real.
-* **Cero Permisos Invasivos**: No requiere permisos de accesibilidad ni interceptación de notificaciones (`BIND_ACCESSIBILITY_SERVICE` y `BIND_NOTIFICATION_LISTENER_SERVICE` eliminados). **100% libre de advertencias de Google Play Protect**.
+### Novedades v1.0.3-13:
+* **Watchdog de Expiración de Pista**: Resuelve de forma definitiva los anuncios que Spotify reproduce entre canciones sin emitir broadcasts.
+* **Ocultación Automática de Requisitos Cumplidos**:
+  - Si la batería ya está configurada "Sin restricciones", el botón desaparece de la app.
+  - Si Spotify ya emite eventos hacia la app, el botón de configuración de Spotify desaparece de la app.
+  - Se muestra un recuadro verde de confirmación: *"✅ Requisitos configurados: Emisión de Spotify y Batería sin restricciones verificados"*.
+* **Emisión Dual de Teclas Multimedia**: Tanto por `AudioManager.dispatchMediaKeyEvent` como por `ACTION_MEDIA_BUTTON` dirigido específicamente a Spotify.
+* **Cero Permisos Invasivos**: Sin permisos de accesibilidad ni lectura de notificaciones. 100% compatible con Google Play Protect.
 
 ### 📲 Descarga e Instalación del APK Oficial:
-* **Descarga directa**: **[Descargar SpotiGuard-1.0.2-12.apk (v1.0.2-12)](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.2-12/SpotiGuard-1.0.2-12.apk)** *(4.51 MB)*.
-* **Firma Oficial**: Almacén de claves RSA 2048-bit (`CN=SpotiGuard`) con esquemas **v2** y **v3**. Cero bloqueos de Google Play Protect.
-
----
-
-### ⚙️ Configuración Inicial en el Móvil (2 sencillos pasos):
-1. **Paso 1: Activar transmisión en Spotify (Solo 1 vez)**:
-   - Abre **Spotify** -> Toca el icono de **Ajustes (⚙️)**.
-   - Ve a la pestaña **«Reproducción»** (o el apartado **«Dispositivos»** según tu versión de Spotify).
-   - Activa el interruptor: **«Estado de transmisión del dispositivo»** (o *«Estado de emisión del dispositivo»* / *«Device Broadcast Status»*).
-     *(Debajo pone: "Permite que otras apps de este dispositivo vean lo que estás escuchando")*.
-2. **Paso 2: Iniciar la Protección en SpotiGuard**:
-   - Abre **SpotiGuard**.
-   - Pulsa en **"🛡️ Activar Protección SpotiGuard"** (o simplemente pulsa "🚀 Abrir Spotify").
-   - Opcional: Pulsa en **"Desactivar Optimización de Batería"** y selecciona **"Sin restricciones"**.
-3. ¡Listo! A partir de ese momento, cada vez que abras Spotify o enciendas el móvil, SpotiGuard estará activo protegiéndote y saltando cualquier anuncio.
+* **Descarga directa**: **[Descargar SpotiGuard-1.0.3-13.apk (v1.0.3-13)](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.3-13/SpotiGuard-1.0.3-13.apk)** *(4.51 MB)*.
+* **Firma Oficial**: Almacén de claves RSA 2048-bit (`CN=SpotiGuard`) con esquemas **v2** y **v3**.
 
 ---
 
 ## 🏷️ Sistema de Control de Versiones Heredado de JARVIS
 
-SpotiGuard adopta la arquitectura exacta de nomenclatura y versionado del proyecto **JARVIS**:
-
 | Componente | Formato | Ejemplo en SpotiGuard | Significado |
 | :--- | :--- | :--- | :--- |
-| **`versionName`** | SemVer `X.Y.Z` | `1.0.2` | Nombre semántico deducido automáticamente de Conventional Commits (`feat:` minor, `fix:` patch, `BREAKING CHANGE:` major). |
-| **`versionCode`** | Entero creciente | `12` | Recuento estricto de commits (`git rev-list --count HEAD`). Nunca retrocede y garantiza actualizaciones válidas. |
-| **Etiqueta Git (Tag)** | `v<versionName>-<versionCode>` | `v1.0.2-12` | El estado vive en las etiquetas de git. |
-| **Título de Release** | `<App> <versionName> (<versionCode>)` | `SpotiGuard 1.0.2 (12)` | Título estandarizado para las publicaciones de GitHub. |
+| **`versionName`** | SemVer `X.Y.Z` | `1.0.3` | Nombre semántico deducido automáticamente de Conventional Commits. |
+| **`versionCode`** | Entero creciente | `13` | Recuento estricto de commits (`git rev-list --count HEAD`). Nunca retrocede. |
+| **Etiqueta Git (Tag)** | `v<versionName>-<versionCode>` | `v1.0.3-13` | El estado vive en las etiquetas de git. |
+| **Título de Release** | `<App> <versionName> (<versionCode>)` | `SpotiGuard 1.0.3 (13)` | Título estandarizado para publicaciones de GitHub. |
 | **Paquete Windows** | `<App>-Windows-<versionName>-<versionCode>.zip` | `SpotiGuard-Windows-1.0.0-4.zip` | Binario portable empaquetado para PC. |
-| **Paquete Android** | `<App>-<versionName>-<versionCode>.apk` | `SpotiGuard-1.0.2-12.apk` | Paquete APK firmado para móviles. |
+| **Paquete Android** | `<App>-<versionName>-<versionCode>.apk` | `SpotiGuard-1.0.3-13.apk` | Paquete APK firmado para móviles. |
 
 ---
 
@@ -144,7 +118,7 @@ SpotiGuard adopta la arquitectura exacta de nomenclatura y versionado del proyec
 Ads Spotify/
 ├── Spotify (Protegido con SpotiGuard).lnk # Acceso directo conjunto para abrir Spotify + SpotiGuard
 ├── SpotiSkip (Iniciar App).lnk    # Acceso directo para abrir la app de SpotiGuard en PC
-├── SpotiGuard-1.0.2-12.apk        # Paquete APK oficial limpio y firmado para Android (4.51 MB)
+├── SpotiGuard-1.0.3-13.apk        # Paquete APK oficial limpio y firmado para Android (4.51 MB)
 ├── Lanzar Spotify Protegido.bat   # Script para lanzar Spotify y SpotiGuard en PC
 ├── instalar_android.bat           # Instalador automático en 1 clic para móvil vía ADB
 ├── README.md                      # Documentación centralizada del proyecto
@@ -161,15 +135,15 @@ Ads Spotify/
     └── app/src/main/
         ├── AndroidManifest.xml    # Manifiesto limpio con BootReceiver y SpotifyLaunchReceiver
         ├── java/com/spotiskip/guardian/
-        │   ├── MainActivity.kt    # Pantalla de control y auto-arranque
+        │   ├── MainActivity.kt    # Pantalla de control y verificación dinámica de requisitos
         │   ├── receivers/
         │   │   ├── BootReceiver.kt          # Auto-arranque al encender el teléfono
         │   │   └── SpotifyLaunchReceiver.kt # Auto-activación al recibir emisiones de Spotify
         │   ├── services/
-        │   │   └── SpotiGuardService.kt     # Foreground Service con detección universal de IDs
+        │   │   └── SpotiGuardService.kt     # Foreground Service con Watchdog de fin de pista
         │   └── utils/
-        │       └── SpotifyController.kt     # Kill, Relaunch, Buffer Purge y Play
-        └── res/                   # Layouts e interfaz gráfica limpia sin selector de mute
+        │       └── SpotifyController.kt     # Kill, Relaunch, Buffer Purge y Play dual
+        └── res/                   # Layouts e interfaz con autocomprobación de requisitos
 ```
 
 ---

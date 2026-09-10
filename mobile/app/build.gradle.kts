@@ -6,12 +6,12 @@ plugins {
 val codigoVersion: Int =
     providers.gradleProperty("spotiguardVersionCode").orNull?.toIntOrNull()
         ?: System.getenv("SPOTIGUARD_VERSION_CODE")?.toIntOrNull()
-        ?: 12
+        ?: 13
 
 val nombreVersion: String =
     providers.gradleProperty("spotiguardVersionName").orNull
         ?: System.getenv("SPOTIGUARD_VERSION_NAME")
-        ?: "1.0.2"
+        ?: "1.0.3"
 
 android {
     namespace = "com.spotiskip.guardian"

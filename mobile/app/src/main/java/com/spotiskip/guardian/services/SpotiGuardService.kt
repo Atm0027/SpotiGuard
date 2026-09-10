@@ -11,7 +11,10 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.spotiskip.guardian.MainActivity
@@ -23,15 +26,35 @@ import com.spotiskip.guardian.utils.SpotifyController
  * Modo de operación único y exclusivo:
  * Al detectar un anuncio, CIERRA Spotify, lo VUELVE A ABRIR y le DA AL PLAY.
  * Sin silenciamientos de audio ni mutaciones.
+ *
+ * Implementa detección dual infalible:
+ * 1. Detección reactiva por Broadcast (anuncios explícitos, IDs no-track, palabras clave).
+ * 2. Watchdog por expiración de pista: Cuando una canción termina y Spotify reproduce
+ *    un anuncio, Spotify NO EMITE broadcasts. El watchdog detecta el fin de la canción
+ *    y ejecuta inmediatamente el salto de anuncio si no llega una nueva canción.
  */
 class SpotiGuardService : Service() {
 
     private var isReceiverRegistered = false
     private var lastTrack = ""
-    private var isAdActive = false
     private var lastSkipTimestamp = 0L
 
+    // Estado de la pista actual para el Watchdog
+    private var currentTrackId = ""
+    private var currentTrackDurationMs = 0L
+    private var currentPlaybackPosition = 0L
+    private var lastStateTimestamp = 0L
+    private var isPlaybackActive = false
+
+    private val watchdogHandler = Handler(Looper.getMainLooper())
+    private val watchdogRunnable = Runnable {
+        Log.w(TAG, "⏰ WATCHDOG EXPIRADO: Duración de canción agotada sin nuevo tema -> ANUNCIO DETECTADO")
+        handleAdDetected("Anuncio publicitario de Spotify")
+    }
+
     companion object {
+        private const val TAG = "SpotiGuardService"
+
         const val CHANNEL_ID = "spotiguard_monitor_channel"
         const val NOTIFICATION_ID = 1001
 
@@ -39,6 +62,7 @@ class SpotiGuardService : Service() {
         const val EXTRA_TRACK_TITLE = "extra_track_title"
         const val EXTRA_IS_AD = "extra_is_ad"
         const val EXTRA_SERVICE_RUNNING = "extra_service_running"
+        const val EXTRA_REQUIREMENTS_CHANGED = "extra_requirements_changed"
 
         const val ACTION_START = "com.spotiskip.guardian.action.START"
         const val ACTION_STOP = "com.spotiskip.guardian.action.STOP"
@@ -55,12 +79,8 @@ class SpotiGuardService : Service() {
 
             when (intent.action) {
                 "com.spotify.music.metadatachanged" -> handleMetadataChanged(intent)
-                "com.spotify.music.playbackstatechanged" -> {
-                    val isPlaying = intent.getBooleanExtra("playing", false)
-                    if (!isPlaying) {
-                        isAdActive = false
-                    }
-                }
+                "com.spotify.music.playbackstatechanged" -> handlePlaybackStateChanged(intent)
+                "com.spotify.music.queuechanged" -> markBroadcastConfigured()
             }
         }
     }
@@ -86,7 +106,7 @@ class SpotiGuardService : Service() {
 
     private fun startInForeground() {
         val notification = buildForegroundNotification("Protección Activa", "Saltando anuncios mediante Reinicio y Play")
-        
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(
                 NOTIFICATION_ID,
@@ -147,6 +167,7 @@ class SpotiGuardService : Service() {
         val filter = IntentFilter().apply {
             addAction("com.spotify.music.metadatachanged")
             addAction("com.spotify.music.playbackstatechanged")
+            addAction("com.spotify.music.queuechanged")
         }
 
         ContextCompat.registerReceiver(
@@ -169,46 +190,124 @@ class SpotiGuardService : Service() {
         }
     }
 
+    private fun markBroadcastConfigured() {
+        val prefs = getSharedPreferences("spotiguard_prefs", Context.MODE_PRIVATE)
+        if (!prefs.getBoolean("spotify_broadcast_enabled", false)) {
+            prefs.edit().putBoolean("spotify_broadcast_enabled", true).apply()
+            Log.i(TAG, "Transmisión de Spotify verificada con éxito.")
+            val updateIntent = Intent(ACTION_SPOTIFY_UPDATE).apply {
+                putExtra(EXTRA_REQUIREMENTS_CHANGED, true)
+                setPackage(packageName)
+            }
+            sendBroadcast(updateIntent)
+        }
+    }
+
     private fun handleMetadataChanged(intent: Intent) {
+        markBroadcastConfigured()
+
         val id = intent.getStringExtra("id")?.trim() ?: ""
         val track = intent.getStringExtra("track")?.trim() ?: ""
         val artist = intent.getStringExtra("artist")?.trim() ?: ""
         val album = intent.getStringExtra("album")?.trim() ?: ""
-        val isPlaying = intent.getBooleanExtra("playing", true)
+        val rawLength = intent.getIntExtra("length", 0)
 
-        if (!isPlaying) {
-            isAdActive = false
+        Log.d(TAG, "metadataChanged: track='$track', artist='$artist', id='$id', length=$rawLength")
+
+        // 1. Si es un anuncio explícito por metadatos
+        if (isAdvertisement(id, track, artist, album)) {
+            cancelWatchdog()
+            handleAdDetected(track.ifEmpty { "Anuncio" })
             return
         }
 
-        val isAd = isAdvertisement(id, track, artist, album)
+        // 2. Si es una canción legítima
+        // En Android, Spotify envía length en segundos si es menor a 10000, o en ms
+        val durationMs = if (rawLength in 1..9999) rawLength * 1000L else rawLength.toLong()
+        currentTrackId = id
+        currentTrackDurationMs = durationMs
+        currentPlaybackPosition = 0L
+        lastStateTimestamp = System.currentTimeMillis()
+        isPlaybackActive = true
 
-        if (isAd) {
-            val now = System.currentTimeMillis()
-            // Evitar bucles continuos (cooldown de 3.5 segundos entre reinicios)
-            if (now - lastSkipTimestamp < 3500) {
-                return
-            }
-            lastSkipTimestamp = now
-            isAdActive = true
-            totalAdsSkipped++
+        val displayTrack = if (artist.isNotEmpty()) "$track - $artist" else track
+        if (displayTrack.isNotEmpty() && displayTrack != lastTrack) {
+            lastTrack = displayTrack
+            updateNotification("SpotiGuard Activo", "▶ $displayTrack")
+            broadcastUpdate(displayTrack, false)
+        }
 
-            val adLabel = track.ifEmpty { "Anuncio" }
-            updateNotification("⚡ Saltando anuncio...", adLabel)
-            broadcastUpdate("⚡ Saltando: $adLabel", true)
+        // Armar el watchdog para vigilar la llegada al final de la pista
+        scheduleWatchdog()
+    }
 
-            // Maniobra pura: Cerrar Spotify -> Abrir Spotify -> Darle al Play
-            SpotifyController.restartAndResume(applicationContext) {
-                isAdActive = false
-            }
+    private fun handlePlaybackStateChanged(intent: Intent) {
+        markBroadcastConfigured()
+
+        val isPlaying = intent.getBooleanExtra("playing", false)
+        val position = intent.getIntExtra("playbackPosition", 0)
+
+        // Algunas versiones de Spotify adjuntan también extras de track en playbackstatechanged
+        val id = intent.getStringExtra("id")?.trim() ?: ""
+        val track = intent.getStringExtra("track")?.trim() ?: ""
+        val artist = intent.getStringExtra("artist")?.trim() ?: ""
+        val album = intent.getStringExtra("album")?.trim() ?: ""
+
+        if (id.isNotEmpty() && isAdvertisement(id, track, artist, album)) {
+            cancelWatchdog()
+            handleAdDetected(track.ifEmpty { "Anuncio" })
+            return
+        }
+
+        isPlaybackActive = isPlaying
+        currentPlaybackPosition = position.toLong()
+        lastStateTimestamp = System.currentTimeMillis()
+
+        Log.d(TAG, "playbackStateChanged: playing=$isPlaying, pos=$position ms")
+
+        if (isPlaying) {
+            scheduleWatchdog()
         } else {
-            isAdActive = false
-            val displayTrack = if (artist.isNotEmpty()) "$track - $artist" else track
-            if (displayTrack.isNotEmpty() && displayTrack != lastTrack) {
-                lastTrack = displayTrack
-                updateNotification("SpotiGuard Activo", "▶ $displayTrack")
-                broadcastUpdate(displayTrack, false)
-            }
+            cancelWatchdog()
+        }
+    }
+
+    private fun scheduleWatchdog() {
+        watchdogHandler.removeCallbacks(watchdogRunnable)
+        if (!isPlaybackActive || currentTrackDurationMs <= 0) return
+
+        val now = System.currentTimeMillis()
+        val elapsed = (now - lastStateTimestamp).coerceAtLeast(0L)
+        val estimatedPos = currentPlaybackPosition + elapsed
+        val remainingMs = (currentTrackDurationMs - estimatedPos).coerceAtLeast(0L)
+
+        // Margen de seguridad de 350 ms para permitir transición fluida si la siguiente pista no es anuncio
+        val delayMs = remainingMs + 350L
+        Log.d(TAG, "Watchdog armado para dentro de ${delayMs}ms (Pista restante: ${remainingMs}ms)")
+        watchdogHandler.postDelayed(watchdogRunnable, delayMs)
+    }
+
+    private fun cancelWatchdog() {
+        watchdogHandler.removeCallbacks(watchdogRunnable)
+    }
+
+    private fun handleAdDetected(label: String) {
+        val now = System.currentTimeMillis()
+        // Evitar bucles continuos (cooldown de 4.0 segundos entre reinicios)
+        if (now - lastSkipTimestamp < 4000) {
+            return
+        }
+        lastSkipTimestamp = now
+        totalAdsSkipped++
+
+        val adLabel = label.ifEmpty { "Anuncio" }
+        updateNotification("⚡ Saltando anuncio...", adLabel)
+        broadcastUpdate("⚡ Saltando: $adLabel", true)
+
+        Log.w(TAG, "🚨 ANUNCIO INTERCEPTADO ($adLabel). Ejecutando salto por reinicio...")
+        // Maniobra pura: Cerrar Spotify -> Abrir Spotify -> Purgar Buffer -> Darle al Play
+        SpotifyController.restartAndResume(applicationContext) {
+            Log.i(TAG, "Reinicio y reanudación de Spotify completados.")
         }
     }
 
@@ -227,21 +326,18 @@ class SpotiGuardService : Service() {
     ): Boolean {
         val idLower = id.lowercase().trim()
 
-        // 1. REGLA DE ORO: Si no es un track musical ni episodio, ES UN ANUNCIO
+        // 1. REGLA DE ORO: Si trae un ID no vacío y no es track ni episode -> ES UN ANUNCIO
         if (idLower.isNotEmpty()) {
             if (!idLower.startsWith("spotify:track:") && !idLower.startsWith("spotify:episode:")) {
                 return true
             }
-        } else {
-            // Si el ID está completamente vacío, es una cuña comercial
-            return true
         }
 
-        // 2. Si el ID fuera un track simulado, comprobar palabras clave publicitarias
-        val trackLower = track.lowercase()
-        val artistLower = artist.lowercase()
-        val albumLower = album.lowercase()
+        val trackLower = track.lowercase().trim()
+        val artistLower = artist.lowercase().trim()
+        val albumLower = album.lowercase().trim()
 
+        // 2. Palabras clave publicitarias multilingües
         val adKeywords = listOf(
             "advertisement", "publicidad", "anuncio", "anuncios", "promo",
             "spotify free", "werbung", "publicite", "publicité", "publicidade", "pubblicità"
@@ -278,6 +374,7 @@ class SpotiGuardService : Service() {
     }
 
     private fun stopForegroundService() {
+        cancelWatchdog()
         unregisterSpotifyReceiver()
         isRunning = false
         broadcastServiceState(false)

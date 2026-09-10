@@ -75,38 +75,42 @@ object SpotifyController {
         }
     }
 
-    fun sendMediaStop(context: Context) {
+    fun sendMediaKey(context: Context, keyCode: Int) {
         try {
             val am = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PAUSE))
-            am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PAUSE))
-            am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_STOP))
-            am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_STOP))
+            am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, keyCode))
+            am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, keyCode))
+
+            for (pkg in listOf(SPOTIFY_PACKAGE, SPOTIFY_LITE_PACKAGE)) {
+                val downIntent = Intent(Intent.ACTION_MEDIA_BUTTON).apply {
+                    `package` = pkg
+                    putExtra(Intent.EXTRA_KEY_EVENT, KeyEvent(KeyEvent.ACTION_DOWN, keyCode))
+                }
+                context.sendBroadcast(downIntent)
+
+                val upIntent = Intent(Intent.ACTION_MEDIA_BUTTON).apply {
+                    `package` = pkg
+                    putExtra(Intent.EXTRA_KEY_EVENT, KeyEvent(KeyEvent.ACTION_UP, keyCode))
+                }
+                context.sendBroadcast(upIntent)
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    fun sendMediaStop(context: Context) {
+        sendMediaKey(context, KeyEvent.KEYCODE_MEDIA_PAUSE)
+        sendMediaKey(context, KeyEvent.KEYCODE_MEDIA_STOP)
     }
 
     fun sendMediaNext(context: Context) {
-        try {
-            val am = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_NEXT))
-            am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_NEXT))
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        sendMediaKey(context, KeyEvent.KEYCODE_MEDIA_NEXT)
     }
 
     fun sendMediaPlay(context: Context) {
-        try {
-            val am = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE))
-            am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE))
-            am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY))
-            am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY))
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        sendMediaKey(context, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
+        sendMediaKey(context, KeyEvent.KEYCODE_MEDIA_PLAY)
     }
 
     /**

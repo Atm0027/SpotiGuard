@@ -10,7 +10,10 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.provider.Settings
+import android.view.View
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -29,15 +32,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnToggleService: MaterialButton
     private lateinit var btnSpotifySettings: MaterialButton
     private lateinit var btnBatteryOptimization: MaterialButton
+    private lateinit var layoutRequirementsSuccess: LinearLayout
     private lateinit var btnOpenSpotify: MaterialButton
 
     private val requestNotificationPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            if (isGranted) {
-                startSpotiGuardService()
-            } else {
-                startSpotiGuardService()
-            }
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { _ ->
+            startSpotiGuardService()
         }
 
     private val updateReceiver = object : BroadcastReceiver() {
@@ -46,6 +46,10 @@ class MainActivity : AppCompatActivity() {
                 if (intent.hasExtra(SpotiGuardService.EXTRA_SERVICE_RUNNING)) {
                     val running = intent.getBooleanExtra(SpotiGuardService.EXTRA_SERVICE_RUNNING, false)
                     updateServiceUI(running)
+                }
+
+                if (intent.getBooleanExtra(SpotiGuardService.EXTRA_REQUIREMENTS_CHANGED, false)) {
+                    updateRequirementsUI()
                 }
 
                 val title = intent.getStringExtra(SpotiGuardService.EXTRA_TRACK_TITLE)
@@ -81,6 +85,7 @@ class MainActivity : AppCompatActivity() {
         btnToggleService = findViewById(R.id.btnToggleService)
         btnSpotifySettings = findViewById(R.id.btnSpotifySettings)
         btnBatteryOptimization = findViewById(R.id.btnBatteryOptimization)
+        layoutRequirementsSuccess = findViewById(R.id.layoutRequirementsSuccess)
         btnOpenSpotify = findViewById(R.id.btnOpenSpotify)
 
         setupListeners()
@@ -95,6 +100,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         updateServiceUI(SpotiGuardService.isRunning)
         updateStats()
+        updateRequirementsUI()
 
         val filter = IntentFilter(SpotiGuardService.ACTION_SPOTIFY_UPDATE)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -122,34 +128,40 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-
         btnSpotifySettings.setOnClickListener {
             Toast.makeText(
                 this,
-                "En Spotify: Ajustes -> Reproducción -> Activa 'Estado de transmisión del dispositivo'",
+                "En Spotify: Ajustes ⚙️ -> Reproducción -> Activa 'Estado de transmisión del dispositivo'",
                 Toast.LENGTH_LONG
             ).show()
-            val launched = SpotifyController.relaunchSpotify(this)
-            if (!launched) {
-                Toast.makeText(this, "Abre Spotify para verificar el ajuste", Toast.LENGTH_SHORT).show()
-            }
+            SpotifyController.relaunchSpotify(this)
         }
 
         btnBatteryOptimization.setOnClickListener {
             try {
-                val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-                startActivity(intent)
-            } catch (e: Exception) {
-                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                    data = Uri.parse("package:$packageName")
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                        data = Uri.parse("package:$packageName")
+                    }
+                    startActivity(intent)
+                } else {
+                    val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                    startActivity(intent)
                 }
-                startActivity(intent)
+            } catch (e: Exception) {
+                try {
+                    val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                    startActivity(intent)
+                } catch (e2: Exception) {
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.parse("package:$packageName")
+                    }
+                    startActivity(intent)
+                }
             }
-            Toast.makeText(this, "Selecciona 'Sin restricciones' para SpotiGuard", Toast.LENGTH_LONG).show()
         }
 
         btnOpenSpotify.setOnClickListener {
-            // Garantizar que SpotiGuard esté activo al lanzar Spotify
             if (!SpotiGuardService.isRunning) {
                 startSpotiGuardService()
             }
@@ -157,6 +169,30 @@ class MainActivity : AppCompatActivity() {
             if (!launched) {
                 Toast.makeText(this, "No se pudo abrir Spotify automáticamente. Ábrelo desde tus aplicaciones.", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    private fun isBatteryOptimizedIgnored(context: Context): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val pm = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
+            pm?.isIgnoringBatteryOptimizations(context.packageName) ?: true
+        } else {
+            true
+        }
+    }
+
+    private fun updateRequirementsUI() {
+        val prefs = getSharedPreferences("spotiguard_prefs", Context.MODE_PRIVATE)
+        val broadcastConfigured = prefs.getBoolean("spotify_broadcast_enabled", false)
+        val batteryOptimized = isBatteryOptimizedIgnored(this)
+
+        btnSpotifySettings.visibility = if (broadcastConfigured) View.GONE else View.VISIBLE
+        btnBatteryOptimization.visibility = if (batteryOptimized) View.GONE else View.VISIBLE
+
+        if (broadcastConfigured && batteryOptimized) {
+            layoutRequirementsSuccess.visibility = View.VISIBLE
+        } else {
+            layoutRequirementsSuccess.visibility = View.GONE
         }
     }
 
