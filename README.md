@@ -15,7 +15,7 @@ El sistema se ejecuta en segundo plano y **se activa de forma 100% automática e
 
 ### 📥 Descargas Directas Listas para Usar
 
-* 📱 **Móvil (Android)**: **[Descargar SpotiSkip-Android.apk (v1.0.0)](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.0/SpotiSkip-Android.apk)** *(5.73 MB — Paquete APK listo para instalar en cualquier teléfono Android)*
+* 📱 **Móvil (Android)**: **[Descargar SpotiGuard-Android.apk (v1.0.0)](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.0/SpotiGuard-Android.apk)** *(4.51 MB — Paquete APK con firma oficial de producción y esquemas v1, v2 y v3 habilitados para Android 8.0 a 14+)*
 * 🖥️ **PC (Windows)**: **[Descargar SpotiGuard-Windows.zip (v1.0.0)](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.0/SpotiGuard-Windows.zip)** *(47.9 MB — Paquete comprimido portable de 64 bits con ejecutable nativo, listo para descomprimir y usar)*
 * 🔗 **Acceso Directo Local en PC**: **[`SpotiSkip (Iniciar App).lnk`](SpotiSkip%20(Iniciar%20App).lnk)** *(Lanzamiento directo en 1 clic con icono de sistema)*
 * 🌐 **Repositorio Oficial en GitHub**: **[https://github.com/Atm0027/SpotiGuard](https://github.com/Atm0027/SpotiGuard)**
@@ -88,16 +88,32 @@ La aplicación para PC está compilada como un **ejecutable nativo de Windows (`
 Ubicada en la carpeta [`mobile/`](mobile/). Proyecto nativo completo en **Kotlin**.
 
 ### Características Principales:
-* **Servicio Desatendido 24/7 (`NotificationListenerService`)**: El propio sistema operativo Android mantiene vivo el servicio de escucha de notificaciones de Spotify.
+* **Servicio Desatendido 24/7 (`NotificationListenerService`)**: El propio sistema operativo Android mantiene vivo el servicio de escucha de notificaciones de Spotify sin consumir batería en bucle.
 * **Receptor de Inicio (`BootReceiver`)**: Se reactiva automáticamente tras reiniciar el teléfono móvil.
 * **Modos Móviles**:
   1. **Silenciador Inteligente (Recomendado para Móvil)**: Silencia el volumen multimedia (`STREAM_MUSIC`) en el milisegundo en que entra el anuncio y lo restaura sin interrumpir la pantalla ni tu navegación.
   2. **Reinicio Rápido Asistido**: Reinicia el proceso de Spotify y reanuda la cola con eventos de tecla multimedia.
 
-### 📲 Instalación del APK en Android:
-* Descarga el archivo compilado listo para usar: **[Descargar SpotiSkip-Android.apk (v1.0.0)](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.0/SpotiSkip-Android.apk)**.
-* Transfiérelo o descárgalo directamente en tu teléfono móvil e instálalo permitiendo la instalación de aplicaciones desconocidas en los ajustes de tu terminal.
-* Abre SpotiGuard en tu móvil y pulsa en **"1. Activar Acceso a Notificaciones"** para permitir que vigile en segundo plano de manera continua.
+### 📲 Descarga e Instalación del APK Oficial:
+* **Descarga directa**: **[Descargar SpotiGuard-Android.apk (v1.0.0)](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.0/SpotiGuard-Android.apk)** *(4.51 MB)*.
+* **Firma Oficial de Producción (Release Signing)**: El paquete está firmado con un almacén de claves RSA de 2048 bits exclusivo (`CN=SpotiGuard`) y triple esquema de firma verificado: **v1 (JAR Signature)**, **v2 (Full APK Signature)** y **v3 (Android Pie+)**, garantizando compatibilidad total y descartando bloqueos por claves de depuración.
+
+#### ⚠️ Pasos para autorizar la instalación manual (Sideloading) en Android:
+Al ser una aplicación de código abierto distribuida fuera de Google Play Store, Android y Google Play Protect solicitan confirmación expresa del usuario:
+1. **Aviso de Google Play Protect ("Bloqueado por Play Protect / Desarrollador desconocido")**:
+   - En la ventana que aparece, **NO** pulses 'Aceptar' (eso cancelaría la instalación).
+   - Pulsa en **"Más detalles"** (o en la flechita que apunta hacia abajo).
+   - Pulsa en el texto azul **"Instalar de todas formas"**.
+2. **Permiso de "Instalar aplicaciones desconocidas"**:
+   - Si tu navegador (Chrome) o el explorador de archivos muestra un mensaje de seguridad, pulsa en *Ajustes* y activa la casilla **"Permitir desde esta fuente"**.
+3. **Dispositivos Samsung (Bloqueador automático de OneUI 6 / Android 14)**:
+   - Si utilizas Samsung con Knox y el bloqueador automático activo, ve a *Ajustes -> Seguridad y privacidad -> Bloqueador automático* y desactívalo momentáneamente para proceder a la instalación.
+
+### ⚙️ Configuración Inicial en el Móvil:
+1. Abre **SpotiGuard** en tu teléfono.
+2. Pulsa en **"1. Activar Acceso a Notificaciones"** y permite el acceso a SpotiGuard para que pueda leer en segundo plano el título y artista que emite Spotify.
+3. *(Opcional)* Pulsa en **"2. Activar Servicio de Accesibilidad"** si deseas usar el modo de reinicio asistido en pantalla.
+4. Ajuste de batería: En *Ajustes -> Aplicaciones -> SpotiGuard -> Batería*, selecciona **"Sin restricciones"** para que el sistema operativo no congele el vigilante en reposo prolongado.
 
 ---
 
