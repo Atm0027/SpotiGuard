@@ -18,7 +18,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.spotiskip.guardian"
+        applicationId = "com.audioguard.companion"
         minSdk = 26
         targetSdk = 34
         versionCode = codigoVersion

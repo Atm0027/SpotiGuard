@@ -19,7 +19,7 @@ Aplicación nativa de Android que detecta en tiempo real los anuncios de Spotify
 
 ## 📲 Descarga e Instalación del APK Oficial
 
-- **Descarga Directa del APK**: **[Descargar SpotiGuard-1.0.0-4.apk (Release v1.0.0-4)](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.0-4/SpotiGuard-1.0.0-4.apk)**
+- **Descarga Directa del APK**: **[Descargar SpotiGuard-1.0.1-5.apk (Release v1.0.1-5)](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.1-5/SpotiGuard-1.0.1-5.apk)**
 - **Firma Oficial de Producción**: Firmado con Keystore Release propio con esquemas **v1 (JAR), v2 y v3** activos para máxima compatibilidad con Android 8.0 hasta Android 14+.
 - **Permisos 100% Seguros y Limpios**: Se ha eliminado cualquier servicio de accesibilidad (`canRetrieveWindowContent`) para no activar la heurística de seguridad de Play Protect (*"Aplicación bloqueada para proteger tu dispositivo"*).
 

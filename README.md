@@ -15,11 +15,11 @@ El sistema se ejecuta en segundo plano y **se activa de forma 100% automática e
 
 ### 📥 Descargas Directas Listas para Usar
 
-* 📱 **Móvil (Android)**: **[Descargar SpotiGuard-1.0.0-4.apk](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.0-4/SpotiGuard-1.0.0-4.apk)** *(4.51 MB — Versión sin permisos de accesibilidad invasivos, firmada con esquemas v1, v2 y v3 oficiales)*
+* 📱 **Móvil (Android)**: **[Descargar SpotiGuard-1.0.1-5.apk](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.1-5/SpotiGuard-1.0.1-5.apk)** *(4.51 MB — Identificador limpio `com.audioguard.companion`, cero permisos invasivos, firma v1+v2+v3)*
 * 🖥️ **PC (Windows)**: **[Descargar SpotiGuard-Windows-1.0.0-4.zip](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.0-4/SpotiGuard-Windows-1.0.0-4.zip)** *(47.9 MB — Paquete portable con ejecutable de 64 bits y reanudación Windows SMTC)*
 * 🔗 **Acceso Directo Local en PC**: **[`SpotiSkip (Iniciar App).lnk`](SpotiSkip%20(Iniciar%20App).lnk)** *(Lanzamiento directo en 1 clic con icono de sistema)*
 * 🌐 **Repositorio Oficial en GitHub**: **[https://github.com/Atm0027/SpotiGuard](https://github.com/Atm0027/SpotiGuard)**
-* 🚀 **Última Release Oficial (v1.0.0-4)**: **[https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.0-4](https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.0-4)**
+* 🚀 **Última Release Oficial (v1.0.1-5)**: **[https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.1-5](https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.1-5)**
 
 ---
 
@@ -95,7 +95,7 @@ Ubicada en la carpeta [`mobile/`](mobile/). Proyecto nativo completo en **Kotlin
   2. **Reinicio Rápido Asistido**: Reinicia el proceso de Spotify y reanuda la cola con eventos de tecla multimedia.
 
 ### 📲 Descarga e Instalación del APK Oficial:
-* **Descarga directa**: **[Descargar SpotiGuard-1.0.0-4.apk (v1.0.0-4)](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.0-4/SpotiGuard-1.0.0-4.apk)** *(4.51 MB)*.
+* **Descarga directa**: **[Descargar SpotiGuard-1.0.1-5.apk (v1.0.1-5)](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.1-5/SpotiGuard-1.0.1-5.apk)** *(4.51 MB)*.
 * **Firma Oficial de Producción (Release Signing)**: El paquete está firmado con un almacén de claves RSA de 2048 bits exclusivo (`CN=SpotiGuard`) y triple esquema de firma verificado: **v1 (JAR Signature)**, **v2 (Full APK Signature)** y **v3 (Android Pie+)**, garantizando compatibilidad total.
 
 #### 🛡️ Resolución del bloqueo: *"Aplicación bloqueada para proteger tu dispositivo"*
