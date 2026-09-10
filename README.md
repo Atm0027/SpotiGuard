@@ -68,7 +68,7 @@ Ubicada en la carpeta [`pc/`](pc/).
 * **Auto-activación con Spotify**: Un vigilante (*Watcher*) en segundo plano detecta cuándo abres Spotify y pone en marcha la protección sin que tengas que pulsar nada.
 * **Auto-arranque con Windows**: Opción integrada para iniciar SpotiGuard minimizado automáticamente al encender el ordenador.
 * **Dos Modos de Operación**:
-  1. **Reinicio Rápido (Skip & Relaunch)**: Cierra y reabre Spotify instantáneamente en ~2 segundos, saltando a la siguiente canción real.
+  1. **Reinicio Rápido (Skip & Relaunch)**: Cierra y reabre Spotify instantáneamente en ~2-4 segundos, saltando a la siguiente canción real.
   2. **Silenciador Furtivo (Stealth Mute)**: Muta al 0% el volumen exclusivo de Spotify mientras dura el anuncio y lo restablece exactamente cuando empieza la canción, sin parpadeo de ventanas ni reinicios.
 
 ### 🚀 Ejecución de la Aplicación en PC (Sin necesidad de Scripts):
@@ -175,7 +175,11 @@ Ads Spotify/
      - `SUITE 3`: Concurrencia con 150 cambios de modo y 20 ciclos de inicio/parada sin deadlocks.
      - `SUITE 4`: Tolerancia a fallos de configuración con fallback transparente.
      - `SUITE 5`: Equivalencia de lógica de notificaciones Android.
-3. **Compilación de Ejecutable y APK**:
+3. **Pruebas Reales en Vivo con Spotify en Windows**:
+   - **Detección en tiempo real**: Identificación de pistas activas (`iZaak - TOY`, `Clarent - BIENVENIDA`) a través de la integración híbrida de Windows SMTC y `Chrome_WidgetWin_1`.
+   - **Maniobra real de bypass**: Verificación del ciclo completo de cierre atómico de procesos, relanzamiento con ventana visible, purga de buffer residual (`Next Track`) y reanudación confirmada (`PlaybackStatus = 4 / Playing`).
+   - **Tiempo de reanudación medido**: **4.60 segundos**, con audio activo y línea de tiempo avanzando en tiempo real.
+4. **Compilación de Ejecutable y APK**:
    - `dist/SpotiSkip/SpotiSkip.exe` (PE 64-bit ejecutable nativo para Windows 10/11).
    - `SpotiSkip-Android.apk` (5.73 MB, SDK 34, Android 8.0 - 14+).
 

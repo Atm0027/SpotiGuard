@@ -193,31 +193,48 @@ class SpotifySkipper:
 
     def relaunch_spotify(self) -> bool:
         """
-        Vuelve a abrir Spotify mediante el protocolo de sistema 'spotify:'.
-        Funciona tanto para versión estándar como versión de Microsoft Store.
+        Vuelve a abrir Spotify mediante shell AppsFolder o protocolo 'spotify:'.
+        Funciona tanto para versión Microsoft Store (UWP) como versión estándar.
         """
+        # 1. Intentar lanzar via explorer shell:AppsFolder (garantiza apertura de ventana visible en Windows 10/11)
         try:
-            # Lanzamiento mediante protocolo URL de Windows
+            subprocess.run(
+                ["explorer.exe", "shell:AppsFolder\\SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
+            )
+            return True
+        except Exception:
+            pass
+
+        # 2. Fallback mediante protocolo URL de Windows
+        try:
             os.system("start spotify:")
             return True
         except Exception:
-            # Fallback intentando rutas conocidas
-            appdata = os.environ.get("APPDATA", "")
-            standard_path = os.path.join(appdata, "Spotify", "Spotify.exe")
-            if os.path.exists(standard_path):
+            pass
+
+        # 3. Fallback intentando rutas conocidas del instalador Win32 clásico
+        appdata = os.environ.get("APPDATA", "")
+        standard_path = os.path.join(appdata, "Spotify", "Spotify.exe")
+        if os.path.exists(standard_path):
+            try:
                 subprocess.Popen([standard_path])
                 return True
-            return False
+            except Exception:
+                pass
+        return False
 
     def skip_and_restart(self) -> Tuple[bool, str]:
         """
         Ejecuta la maniobra de omisión con garantía de reanudación:
         1. Cierra Spotify y lanzadores.
-        2. Relanza Spotify.
+        2. Relanza Spotify con ventana visible.
         3. Espera a que CEF y el grafo de audio se inicialicen (2.0s - 2.5s).
         4. Descarta diálogos de cuelgue residuales si los hubiera.
         5. Envía señal de 'Next Track' para limpiar el buffer del anuncio que quedó pausado.
-        6. Envía señal de 'Play' mediante SMTC nativo, WM_APPCOMMAND y teclas multimedia extendidas.
+        6. Envía señal de 'Play' mediante WM_APPCOMMAND, SMTC nativo y teclas multimedia extendidas.
         7. Verifica en bucle activo que la música haya comenzado a sonar.
         """
         if not self.can_skip():
@@ -230,7 +247,7 @@ class SpotifySkipper:
         self.terminate_spotify()
         time.sleep(0.5)
 
-        # 2. Relanzar Spotify
+        # 2. Relanzar Spotify con ventana principal visible
         self.relaunch_spotify()
 
         # 3. Esperar a que el proceso levante
@@ -248,29 +265,26 @@ class SpotifySkipper:
                 break
 
         # 4. Tiempo de estabilización de CEF y registro en Windows SMTC
-        time.sleep(2.2)
+        time.sleep(2.5)
         dismiss_spotify_hang_dialogs()
 
         # 5. Bucle de reanudación activa con verificación multicanal
         for attempt in range(4):
             # Paso A: Limpiar buffer residual del anuncio
-            send_media_key(VK_MEDIA_NEXT_TRACK)
             send_appcommand_to_spotify(APPCOMMAND_MEDIA_NEXTTRACK)
-            time.sleep(0.15)
+            send_media_key(VK_MEDIA_NEXT_TRACK)
+            time.sleep(0.3)
 
-            # Paso B: SMTC nativo (el método más fiable en Windows 10/11)
-            if resume_via_smtc():
-                break
-
-            # Paso C: Win32 Message y Tecla extendida
-            send_appcommand_to_spotify(APPCOMMAND_MEDIA_PLAY)
+            # Paso B: Activar reproducción en la ventana de Spotify
+            send_appcommand_to_spotify(APPCOMMAND_MEDIA_PLAY_PAUSE)
             send_media_key(VK_MEDIA_PLAY_PAUSE)
+            time.sleep(0.5)
 
-            time.sleep(0.6)
-
-            # Verificar si SMTC ya se sincronizó
+            # Paso C: SMTC nativo (el método más fiable en Windows 10/11)
             if resume_via_smtc():
                 break
+
+            time.sleep(0.5)
 
         duration = round(time.time() - start_t, 2)
         return True, f"Anuncio saltado y reproducción reanudada en {duration}s"
