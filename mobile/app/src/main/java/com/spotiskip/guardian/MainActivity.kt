@@ -139,18 +139,12 @@ class MainActivity : AppCompatActivity() {
         btnSpotifySettings.setOnClickListener {
             Toast.makeText(
                 this,
-                "En Spotify: Ajustes -> Activa 'Estado de emisión del dispositivo'",
+                "En Spotify: Ajustes -> Reproducción -> Activa 'Estado de transmisión del dispositivo'",
                 Toast.LENGTH_LONG
             ).show()
-            try {
-                val intent = packageManager.getLaunchIntentForPackage(SpotifyController.SPOTIFY_PACKAGE)
-                if (intent != null) {
-                    startActivity(intent)
-                } else {
-                    Toast.makeText(this, "Spotify no está instalado", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            val launched = SpotifyController.relaunchSpotify(this)
+            if (!launched) {
+                Toast.makeText(this, "Abre Spotify para verificar el ajuste", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -172,7 +166,10 @@ class MainActivity : AppCompatActivity() {
             if (!SpotiGuardService.isRunning) {
                 startSpotiGuardService()
             }
-            SpotifyController.relaunchSpotify(this)
+            val launched = SpotifyController.relaunchSpotify(this)
+            if (!launched) {
+                Toast.makeText(this, "No se pudo abrir Spotify automáticamente. Ábrelo desde tus aplicaciones.", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
