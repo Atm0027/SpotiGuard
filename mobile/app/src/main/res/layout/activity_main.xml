@@ -206,11 +206,11 @@
                     app:cornerRadius="8dp" />
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnAccessibilityPermission"
+                    android:id="@+id/btnBatteryOptimization"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="2. Activar Servicio de Accesibilidad"
+                    android:text="2. Desactivar Optimización de Batería"
                     android:textColor="@color/text_primary"
                     app:backgroundTint="#334155"
                     app:cornerRadius="8dp" />

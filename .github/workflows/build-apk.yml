@@ -1,4 +1,4 @@
-name: Compilar APK de SpotiSkip Android
+name: Compilar APK de SpotiGuard Android
 
 on:
   push:
@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Clonar repositorio
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Configurar JDK 17
         uses: actions/setup-java@v4
@@ -21,16 +23,34 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Calcular versión estilo JARVIS
+        id: version
+        run: |
+          CODIGO=$(git rev-list --count HEAD)
+          NOMBRE=$(python pc/core/version.py --name)
+          test -n "$NOMBRE" && test "$CODIGO" -gt 0
+          echo "codigo=$CODIGO" >> "$GITHUB_OUTPUT"
+          echo "nombre=$NOMBRE" >> "$GITHUB_OUTPUT"
+          echo "Compilando versión $NOMBRE ($CODIGO)"
+
       - name: Dar permisos de ejecución a gradlew
         run: chmod +x mobile/gradlew
 
       - name: Compilar APK con Gradle
         run: |
           cd mobile
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleRelease \
+            -PspotiguardVersionCode=${{ steps.version.outputs.codigo }} \
+            -PspotiguardVersionName=${{ steps.version.outputs.nombre }} \
+            --stacktrace
 
       - name: Subir APK generado como Artefacto Descargable
         uses: actions/upload-artifact@v4
         with:
-          name: SpotiSkip-Mobile-APK
-          path: mobile/app/build/outputs/apk/debug/app-debug.apk
+          name: SpotiGuard-${{ steps.version.outputs.nombre }}-${{ steps.version.outputs.codigo }}-APK
+          path: mobile/app/build/outputs/apk/release/SpotiGuard-*.apk

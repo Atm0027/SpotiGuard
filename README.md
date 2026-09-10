@@ -15,11 +15,11 @@ El sistema se ejecuta en segundo plano y **se activa de forma 100% automática e
 
 ### 📥 Descargas Directas Listas para Usar
 
-* 📱 **Móvil (Android)**: **[Descargar SpotiGuard-Android.apk (v1.0.0)](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.0/SpotiGuard-Android.apk)** *(4.51 MB — Paquete APK con firma oficial de producción y esquemas v1, v2 y v3 habilitados para Android 8.0 a 14+)*
-* 🖥️ **PC (Windows)**: **[Descargar SpotiGuard-Windows.zip (v1.0.0)](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.0/SpotiGuard-Windows.zip)** *(47.9 MB — Paquete comprimido portable de 64 bits con ejecutable nativo, listo para descomprimir y usar)*
+* 📱 **Móvil (Android)**: **[Descargar SpotiGuard-1.0.0-4.apk](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.0-4/SpotiGuard-1.0.0-4.apk)** *(4.51 MB — Versión sin permisos de accesibilidad invasivos, firmada con esquemas v1, v2 y v3 oficiales)*
+* 🖥️ **PC (Windows)**: **[Descargar SpotiGuard-Windows-1.0.0-4.zip](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.0-4/SpotiGuard-Windows-1.0.0-4.zip)** *(47.9 MB — Paquete portable con ejecutable de 64 bits y reanudación Windows SMTC)*
 * 🔗 **Acceso Directo Local en PC**: **[`SpotiSkip (Iniciar App).lnk`](SpotiSkip%20(Iniciar%20App).lnk)** *(Lanzamiento directo en 1 clic con icono de sistema)*
 * 🌐 **Repositorio Oficial en GitHub**: **[https://github.com/Atm0027/SpotiGuard](https://github.com/Atm0027/SpotiGuard)**
-* 🚀 **Página de Releases Oficiales**: **[https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.0](https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.0)**
+* 🚀 **Última Release Oficial (v1.0.0-4)**: **[https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.0-4](https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.0-4)**
 
 ---
 
@@ -95,25 +95,45 @@ Ubicada en la carpeta [`mobile/`](mobile/). Proyecto nativo completo en **Kotlin
   2. **Reinicio Rápido Asistido**: Reinicia el proceso de Spotify y reanuda la cola con eventos de tecla multimedia.
 
 ### 📲 Descarga e Instalación del APK Oficial:
-* **Descarga directa**: **[Descargar SpotiGuard-Android.apk (v1.0.0)](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.0/SpotiGuard-Android.apk)** *(4.51 MB)*.
-* **Firma Oficial de Producción (Release Signing)**: El paquete está firmado con un almacén de claves RSA de 2048 bits exclusivo (`CN=SpotiGuard`) y triple esquema de firma verificado: **v1 (JAR Signature)**, **v2 (Full APK Signature)** y **v3 (Android Pie+)**, garantizando compatibilidad total y descartando bloqueos por claves de depuración.
+* **Descarga directa**: **[Descargar SpotiGuard-1.0.0-4.apk (v1.0.0-4)](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.0-4/SpotiGuard-1.0.0-4.apk)** *(4.51 MB)*.
+* **Firma Oficial de Producción (Release Signing)**: El paquete está firmado con un almacén de claves RSA de 2048 bits exclusivo (`CN=SpotiGuard`) y triple esquema de firma verificado: **v1 (JAR Signature)**, **v2 (Full APK Signature)** y **v3 (Android Pie+)**, garantizando compatibilidad total.
 
-#### ⚠️ Pasos para autorizar la instalación manual (Sideloading) en Android:
-Al ser una aplicación de código abierto distribuida fuera de Google Play Store, Android y Google Play Protect solicitan confirmación expresa del usuario:
-1. **Aviso de Google Play Protect ("Bloqueado por Play Protect / Desarrollador desconocido")**:
-   - En la ventana que aparece, **NO** pulses 'Aceptar' (eso cancelaría la instalación).
-   - Pulsa en **"Más detalles"** (o en la flechita que apunta hacia abajo).
-   - Pulsa en el texto azul **"Instalar de todas formas"**.
-2. **Permiso de "Instalar aplicaciones desconocidas"**:
-   - Si tu navegador (Chrome) o el explorador de archivos muestra un mensaje de seguridad, pulsa en *Ajustes* y activa la casilla **"Permitir desde esta fuente"**.
-3. **Dispositivos Samsung (Bloqueador automático de OneUI 6 / Android 14)**:
-   - Si utilizas Samsung con Knox y el bloqueador automático activo, ve a *Ajustes -> Seguridad y privacidad -> Bloqueador automático* y desactívalo momentáneamente para proceder a la instalación.
+#### 🛡️ Resolución del bloqueo: *"Aplicación bloqueada para proteger tu dispositivo"*
+Si al intentar instalar el APK anterior te apareció el mensaje de bloqueo preventivo del sistema, **ya ha sido solucionado en la versión `v1.0.0-4`**:
+1. **¿Por qué ocurría?**:
+   - El APK declaraba anteriormente un servicio de accesibilidad secundario con la directiva `android:canRetrieveWindowContent="true"`.
+   - En Android 13 y 14, **Google Play Protect clasifica automáticamente como riesgo crítico cualquier APK descargado fuera de la tienda que incluya servicios de inspección de accesibilidad** (heurística anti-troyanos).
+2. **¿Cómo se ha corregido?**:
+   - Se ha **eliminado por completo el servicio de accesibilidad** y cualquier permiso innecesario.
+   - SpotiGuard opera **100% a través del servicio estándar de notificaciones (`NotificationListenerService`) y control de audio (`AudioManager`)**, que son las APIs oficiales, limpias y no invasivas para detectar anuncios y mutearlos sin saltar ninguna alarma de seguridad.
+3. **Instalación paso a paso**:
+   - Abre el archivo descargado **`SpotiGuard-1.0.0-4.apk`**.
+   - Si tu navegador o explorador te solicita autorización para instalar apps desconocidas, pulsa en *Ajustes* y activa **"Permitir desde esta fuente"**.
+   - Si Google Play Protect muestra una ventana de confirmación al ser una app nueva:
+     - Pulsa en **"Más detalles"** (o la flecha desplegable).
+     - Pulsa en **"Instalar de todas formas"**.
+   - *(En teléfonos Samsung)*: Si tienes activado el "Bloqueador automático" de OneUI 6/Knox (*Ajustes -> Seguridad y privacidad -> Bloqueador automático*), desactívalo momentáneamente para permitir la instalación.
 
 ### ⚙️ Configuración Inicial en el Móvil:
 1. Abre **SpotiGuard** en tu teléfono.
-2. Pulsa en **"1. Activar Acceso a Notificaciones"** y permite el acceso a SpotiGuard para que pueda leer en segundo plano el título y artista que emite Spotify.
-3. *(Opcional)* Pulsa en **"2. Activar Servicio de Accesibilidad"** si deseas usar el modo de reinicio asistido en pantalla.
-4. Ajuste de batería: En *Ajustes -> Aplicaciones -> SpotiGuard -> Batería*, selecciona **"Sin restricciones"** para que el sistema operativo no congele el vigilante en reposo prolongado.
+2. Pulsa en **"1. Activar Acceso a Notificaciones"** y concede el permiso a SpotiGuard.
+3. Pulsa en **"2. Desactivar Optimización de Batería"** y selecciona **"Sin restricciones"** para asegurar que el sistema operativo no congele el proceso en segundo plano al apagar la pantalla.
+4. ¡Listo! Abre Spotify y pon música. Cada vez que entre una cuña publicitaria, SpotiGuard la silenciará instantáneamente y restaurará el volumen al empezar la siguiente canción.
+
+---
+
+## 🏷️ Sistema de Control de Versiones Heredado de JARVIS
+
+SpotiGuard adopta la arquitectura exacta de nomenclatura y versionado del proyecto **JARVIS**:
+
+| Componente | Formato | Ejemplo en SpotiGuard | Significado |
+| :--- | :--- | :--- | :--- |
+| **`versionName`** | SemVer `X.Y.Z` | `1.0.0` | Nombre semántico deducido automáticamente de los commits convencionales (`feat:` sube minor, `fix:` sube patch, `BREAKING CHANGE:` sube major). |
+| **`versionCode`** | Entero creciente | `4` | Recuento estricto de commits (`git rev-list --count HEAD`). Nunca retrocede y permite a Android detectar actualizaciones válidas. |
+| **Etiqueta Git (Tag)** | `v<versionName>-<versionCode>` | `v1.0.0-4` | El estado vive en las etiquetas de git sin necesidad de reescribir archivos en la rama principal. |
+| **Título de Release** | `<App> <versionName> (<versionCode>)` | `SpotiGuard 1.0.0 (4)` | Título estandarizado y transparente para las publicaciones de GitHub. |
+| **Paquete Windows** | `<App>-Windows-<versionName>-<versionCode>.zip` | `SpotiGuard-Windows-1.0.0-4.zip` | Binario portable empaquetado para PC. |
+| **Paquete Android** | `<App>-<versionName>-<versionCode>.apk` | `SpotiGuard-1.0.0-4.apk` | Paquete APK firmado para móviles. |
 
 ---
 

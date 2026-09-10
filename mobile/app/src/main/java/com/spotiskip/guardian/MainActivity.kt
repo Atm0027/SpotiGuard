@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvSkipCount: TextView
     private lateinit var tvTimeSaved: TextView
     private lateinit var btnNotificationPermission: MaterialButton
-    private lateinit var btnAccessibilityPermission: MaterialButton
+    private lateinit var btnBatteryOptimization: MaterialButton
     private lateinit var btnOpenSpotify: MaterialButton
 
     private val updateReceiver = object : BroadcastReceiver() {
@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity() {
         tvSkipCount = findViewById(R.id.tvSkipCount)
         tvTimeSaved = findViewById(R.id.tvTimeSaved)
         btnNotificationPermission = findViewById(R.id.btnNotificationPermission)
-        btnAccessibilityPermission = findViewById(R.id.btnAccessibilityPermission)
+        btnBatteryOptimization = findViewById(R.id.btnBatteryOptimization)
         btnOpenSpotify = findViewById(R.id.btnOpenSpotify)
 
         setupListeners()
@@ -90,13 +90,18 @@ class MainActivity : AppCompatActivity() {
         btnNotificationPermission.setOnClickListener {
             val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
             startActivity(intent)
-            Toast.makeText(this, "Permite a SpotiSkip escuchar notificaciones", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Permite a SpotiGuard escuchar notificaciones", Toast.LENGTH_LONG).show()
         }
 
-        btnAccessibilityPermission.setOnClickListener {
-            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-            startActivity(intent)
-            Toast.makeText(this, "Habilita el servicio de SpotiSkip", Toast.LENGTH_LONG).show()
+        btnBatteryOptimization.setOnClickListener {
+            try {
+                val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                startActivity(intent)
+            } catch (e: Exception) {
+                val intent = Intent(Settings.ACTION_SETTINGS)
+                startActivity(intent)
+            }
+            Toast.makeText(this, "Selecciona 'Sin restricciones' para SpotiGuard", Toast.LENGTH_LONG).show()
         }
 
         btnOpenSpotify.setOnClickListener {

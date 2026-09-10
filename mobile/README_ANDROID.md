@@ -19,20 +19,21 @@ Aplicación nativa de Android que detecta en tiempo real los anuncios de Spotify
 
 ## 📲 Descarga e Instalación del APK Oficial
 
-- **Descarga Directa del APK**: **[Descargar SpotiGuard-Android.apk (v1.0.0)](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.0/SpotiGuard-Android.apk)**
+- **Descarga Directa del APK**: **[Descargar SpotiGuard-1.0.0-4.apk (Release v1.0.0-4)](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.0-4/SpotiGuard-1.0.0-4.apk)**
 - **Firma Oficial de Producción**: Firmado con Keystore Release propio con esquemas **v1 (JAR), v2 y v3** activos para máxima compatibilidad con Android 8.0 hasta Android 14+.
+- **Permisos 100% Seguros y Limpios**: Se ha eliminado cualquier servicio de accesibilidad (`canRetrieveWindowContent`) para no activar la heurística de seguridad de Play Protect (*"Aplicación bloqueada para proteger tu dispositivo"*).
 
-### ⚠️ Cómo resolver avisos de instalación en Android (Sideloading):
+### 🛡️ Pasos de Instalación en Android:
 
-1. **Google Play Protect ("Bloqueado por Play Protect / Desarrollador desconocido")**:
-   - Al instalar APKs fuera de la tienda oficial, Play Protect muestra un aviso.
+1. **Aviso de Google Play Protect ("Desarrollador desconocido")**:
+   - Al ser una aplicación descargada fuera de la tienda oficial, Play Protect puede pedir confirmación.
    - Pulsa en **"Más detalles"** (o la pequeña flecha desplegable).
    - Pulsa en **"Instalar de todas formas"**.
 2. **Permiso de Fuentes Desconocidas**:
-   - Si tu navegador (Chrome) o gestor de archivos te dice que no tiene permiso:
+   - Si tu navegador (Chrome) o gestor de archivos solicita permisos:
    - Ve a **Ajustes -> Aplicaciones -> Acceso especial -> Instalar aplicaciones desconocidas** -> Activa el permiso para tu navegador o explorador de archivos.
 3. **Bloqueador automático en Samsung (OneUI 6 / Android 14)**:
-   - Si tienes un dispositivo Samsung con esta opción activada:
+   - Si utilizas Samsung con Knox y el bloqueador automático activo:
    - Ve a **Ajustes -> Seguridad y privacidad -> Bloqueador automático** y desactívalo temporalmente para permitir la instalación.
 
 ---
@@ -44,7 +45,6 @@ Una vez instalada la app en tu móvil:
 2. Pulsa en **"1. Activar Acceso a Notificaciones"**:
    - Te llevará a los ajustes del sistema de Android.
    - Busca **SpotiGuard** en la lista y activa la casilla para permitir el acceso.
-3. *(Opcional)* Pulsa en **"2. Activar Servicio de Accesibilidad"** si deseas usar el modo de reinicio asistido en pantalla.
-4. Desactiva la optimización agresiva de batería para SpotiGuard:
-   - En Ajustes del teléfono -> Batería -> Optimización de batería -> SpotiGuard -> **"Sin restricciones"** (para evitar que Android cierre el monitor al apagar la pantalla).
-5. ¡Listo! Abre Spotify y pon música. Cada vez que entre un anuncio publicitario, SpotiGuard lo detectará y actuará automáticamente.
+3. Pulsa en **"2. Desactivar Optimización de Batería"**:
+   - Selecciona **"Sin restricciones"** para SpotiGuard (evita que Android congele el monitor al apagar la pantalla).
+4. ¡Listo! Abre Spotify y pon música. Cada vez que entre un anuncio publicitario, SpotiGuard lo silenciará automáticamente.

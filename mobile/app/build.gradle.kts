@@ -3,6 +3,16 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+val codigoVersion: Int =
+    providers.gradleProperty("spotiguardVersionCode").orNull?.toIntOrNull()
+        ?: System.getenv("SPOTIGUARD_VERSION_CODE")?.toIntOrNull()
+        ?: 4
+
+val nombreVersion: String =
+    providers.gradleProperty("spotiguardVersionName").orNull
+        ?: System.getenv("SPOTIGUARD_VERSION_NAME")
+        ?: "1.0.0"
+
 android {
     namespace = "com.spotiskip.guardian"
     compileSdk = 34
@@ -11,8 +21,8 @@ android {
         applicationId = "com.spotiskip.guardian"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = codigoVersion
+        versionName = nombreVersion
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -53,6 +63,13 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
             excludes += "META-INF/*.version"
+        }
+    }
+
+    applicationVariants.all {
+        outputs.all {
+            val output = this as? com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            output?.outputFileName = "SpotiGuard-${nombreVersion}-${codigoVersion}.apk"
         }
     }
 }
