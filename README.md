@@ -108,9 +108,11 @@ Ubicada en la carpeta [`mobile/`](mobile/). Proyecto nativo completo en **Kotlin
 ---
 
 ### ⚙️ Configuración Inicial en el Móvil (2 sencillos pasos):
-1. **Paso 1: Activar "Estado de emisión" en Spotify (Solo 1 vez)**:
+1. **Paso 1: Activar transmisión en Spotify (Solo 1 vez)**:
    - Abre **Spotify** -> Toca el icono de **Ajustes (⚙️)**.
-   - Desplázate hacia abajo y activa el interruptor: **"Estado de emisión del dispositivo"** *(Permite a otras aplicaciones saber lo que estás escuchando)*.
+   - Ve a la pestaña **«Reproducción»** (o el apartado **«Dispositivos»** según tu versión de Spotify).
+   - Activa el interruptor: **«Estado de transmisión del dispositivo»** (o *«Estado de emisión del dispositivo»* / *«Device Broadcast Status»*).
+     *(Debajo pone: "Permite que otras apps de este dispositivo vean lo que estás escuchando")*.
 2. **Paso 2: Iniciar la Protección en SpotiGuard**:
    - Abre **SpotiGuard**.
    - Pulsa en **"🛡️ Activar Protección SpotiGuard"** (o simplemente pulsa "🚀 Abrir Spotify").

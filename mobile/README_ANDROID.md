@@ -44,10 +44,12 @@ Aplicación nativa de Android que detecta en tiempo real los anuncios de Spotify
 ## ⚙️ Configuración Inicial en 2 Pasos (Solo la primera vez)
 
 Una vez instalada la app en tu móvil:
-1. **Activar "Estado de emisión" en Spotify**:
+1. **Activar transmisión en Spotify**:
    - Abre la app oficial de **Spotify**.
    - Entra en **Ajustes** (icono de rueda dentada ⚙️ arriba a la derecha).
-   - Desplázate hacia abajo y activa el interruptor: **"Estado de emisión del dispositivo"** *(Permite a otras aplicaciones saber lo que estás escuchando)*.
+   - Ve a la pestaña **«Reproducción»** (o el apartado **«Dispositivos»** según tu versión).
+   - Activa el interruptor: **«Estado de transmisión del dispositivo»** (o *«Estado de emisión del dispositivo»* / *«Device Broadcast Status»*).
+     *(Debajo pone: "Permite que otras apps de este dispositivo vean lo que estás escuchando")*.
 2. **Iniciar SpotiGuard**:
    - Abre **SpotiGuard**.
    - Pulsa el botón grande: **"🛡️ Activar Protección SpotiGuard"**.
