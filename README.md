@@ -1,6 +1,7 @@
 # ⚡ SpotiGuard: Autonomous Spotify Ad Guardian & Bypass (PC & Android)
 
 [![GitHub Repository](https://img.shields.io/badge/GitHub-Atm0027%2FSpotiGuard-blue?logo=github)](https://github.com/Atm0027/SpotiGuard)
+[![Latest Release](https://img.shields.io/github/v/release/Atm0027/SpotiGuard?color=orange&logo=github)](https://github.com/Atm0027/SpotiGuard/releases/latest)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Android-green)](#)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)](#)
 [![Kotlin](https://img.shields.io/badge/Kotlin-Android%20Native-purple?logo=kotlin)](#)
@@ -14,10 +15,11 @@ El sistema se ejecuta en segundo plano y **se activa de forma 100% automática e
 
 ### 📥 Descargas Directas Listas para Usar
 
-* 📱 **Móvil (Android)**: **[`SpotiSkip-Android.apk`](SpotiSkip-Android.apk)** *(5.73 MB — Paquete APK listo para instalar en cualquier teléfono Android)*
-* 🖥️ **PC (Windows)**: **[`SpotiGuard-Windows.zip`](SpotiGuard-Windows.zip)** *(47.9 MB — Paquete comprimido portable de 64 bits con ejecutable nativo, listo para descomprimir y usar)*
-* 🔗 **Acceso Directo en PC**: **[`SpotiSkip (Iniciar App).lnk`](SpotiSkip%20(Iniciar%20App).lnk)** *(Lanzamiento directo en 1 clic con icono de sistema)*
+* 📱 **Móvil (Android)**: **[Descargar SpotiSkip-Android.apk (v1.0.0)](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.0/SpotiSkip-Android.apk)** *(5.73 MB — Paquete APK listo para instalar en cualquier teléfono Android)*
+* 🖥️ **PC (Windows)**: **[Descargar SpotiGuard-Windows.zip (v1.0.0)](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.0/SpotiGuard-Windows.zip)** *(47.9 MB — Paquete comprimido portable de 64 bits con ejecutable nativo, listo para descomprimir y usar)*
+* 🔗 **Acceso Directo Local en PC**: **[`SpotiSkip (Iniciar App).lnk`](SpotiSkip%20(Iniciar%20App).lnk)** *(Lanzamiento directo en 1 clic con icono de sistema)*
 * 🌐 **Repositorio Oficial en GitHub**: **[https://github.com/Atm0027/SpotiGuard](https://github.com/Atm0027/SpotiGuard)**
+* 🚀 **Página de Releases Oficiales**: **[https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.0](https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.0)**
 
 ---
 
@@ -93,8 +95,8 @@ Ubicada en la carpeta [`mobile/`](mobile/). Proyecto nativo completo en **Kotlin
   2. **Reinicio Rápido Asistido**: Reinicia el proceso de Spotify y reanuda la cola con eventos de tecla multimedia.
 
 ### 📲 Instalación del APK en Android:
-* Descarga el archivo compilado listo para usar: **[`SpotiSkip-Android.apk`](SpotiSkip-Android.apk)**.
-* Transfiérelo a tu teléfono e instálalo permitiendo la instalación de aplicaciones desconocidas en los ajustes de tu terminal.
+* Descarga el archivo compilado listo para usar: **[Descargar SpotiSkip-Android.apk (v1.0.0)](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.0/SpotiSkip-Android.apk)**.
+* Transfiérelo o descárgalo directamente en tu teléfono móvil e instálalo permitiendo la instalación de aplicaciones desconocidas en los ajustes de tu terminal.
 * Abre SpotiGuard en tu móvil y pulsa en **"1. Activar Acceso a Notificaciones"** para permitir que vigile en segundo plano de manera continua.
 
 ---
