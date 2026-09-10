@@ -102,6 +102,12 @@ def main():
         on_ad_skipped=lambda msg, count: signals.ad_skipped.emit(msg, count)
     )
 
+    # Auto-activar inicio con Windows en primer arranque para que siempre esté listo
+    if not is_autostart_enabled() and config.get("auto_enable_autostart", True):
+        set_autostart(True)
+        config["auto_enable_autostart"] = False
+        save_config(config)
+
     # 2. Crear Ventana Principal
     window = MainWindow()
     window.set_mode(engine.mode)

@@ -1,4 +1,4 @@
-﻿package com.spotiskip.guardian
+package com.spotiskip.guardian
 
 import android.Manifest
 import android.content.BroadcastReceiver
@@ -37,7 +37,6 @@ class MainActivity : AppCompatActivity() {
             if (isGranted) {
                 startSpotiGuardService()
             } else {
-                Toast.makeText(this, "Permiso de notificación necesario para mantener el servicio activo", Toast.LENGTH_SHORT).show()
                 startSpotiGuardService()
             }
         }
@@ -87,6 +86,11 @@ class MainActivity : AppCompatActivity() {
         btnOpenSpotify = findViewById(R.id.btnOpenSpotify)
 
         setupListeners()
+
+        // Auto-iniciar la protección si no está iniciada
+        if (!SpotiGuardService.isRunning) {
+            checkPermissionAndStart()
+        }
     }
 
     override fun onResume() {
@@ -164,6 +168,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnOpenSpotify.setOnClickListener {
+            // Garantizar que SpotiGuard esté activo al lanzar Spotify
+            if (!SpotiGuardService.isRunning) {
+                startSpotiGuardService()
+            }
             SpotifyController.relaunchSpotify(this)
         }
     }
@@ -188,7 +196,6 @@ class MainActivity : AppCompatActivity() {
         }
         ContextCompat.startForegroundService(this, intent)
         updateServiceUI(true)
-        Toast.makeText(this, "Protección de SpotiGuard iniciada", Toast.LENGTH_SHORT).show()
     }
 
     private fun stopSpotiGuardService() {
@@ -197,7 +204,7 @@ class MainActivity : AppCompatActivity() {
         }
         startService(intent)
         updateServiceUI(false)
-        Toast.makeText(this, "Protección de SpotiGuard detenida", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Protección de SpotiGuard pausada", Toast.LENGTH_SHORT).show()
     }
 
     private fun updateServiceUI(running: Boolean) {

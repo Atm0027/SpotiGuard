@@ -101,8 +101,8 @@ class SpotifyGuardianEngine:
                         self.muter.unmute()
 
                 if not is_running:
-                    # Bajo consumo cuando Spotify no está abierto
-                    time.sleep(1.8)
+                    # Bajo consumo pero respuesta inmediata cuando Spotify se abre
+                    time.sleep(0.7)
                     continue
 
                 self._notify_track(title)
