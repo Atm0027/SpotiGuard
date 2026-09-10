@@ -208,16 +208,6 @@
                     app:backgroundTint="@color/cyan_accent"
                     app:cornerRadius="10dp" />
 
-                <!-- Botón Modo: Silenciar vs Reiniciar -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnOperationMode"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Modo: Silenciar Anuncio (Mute)"
-                    android:textColor="@color/text_primary"
-                    app:backgroundTint="#334155"
-                    app:cornerRadius="8dp" />
 
                 <!-- Botón Ajustes Spotify -->
                 <com.google.android.material.button.MaterialButton

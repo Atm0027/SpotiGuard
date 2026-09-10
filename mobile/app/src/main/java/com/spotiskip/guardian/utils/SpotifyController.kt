@@ -13,10 +13,6 @@ object SpotifyController {
     const val SPOTIFY_PACKAGE = "com.spotify.music"
     const val SPOTIFY_LITE_PACKAGE = "com.spotify.lite"
 
-    /**
-     * Obtiene el Intent de lanzamiento para Spotify usando múltiples estrategias
-     * para asegurar compatibilidad con Android 11, 12, 13, 14 y 15 (Package Visibility).
-     */
     fun getSpotifyLaunchIntent(context: Context): Intent? {
         val pm = context.packageManager
 
@@ -45,18 +41,6 @@ object SpotifyController {
         }
         if (uriGeneric.resolveActivity(pm) != null) {
             return uriGeneric
-        }
-
-        // 4. Intent genérico selector de música
-        try {
-            val musicIntent = Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_MUSIC).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            if (musicIntent.resolveActivity(pm) != null) {
-                return musicIntent
-            }
-        } catch (e: Exception) {
-            // Ignorado
         }
 
         return null
@@ -91,26 +75,60 @@ object SpotifyController {
         }
     }
 
-    fun sendMediaPlay(context: Context) {
+    fun sendMediaStop(context: Context) {
         try {
-            val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            val downEvent = KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
-            val upEvent = KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
-            audioManager.dispatchMediaKeyEvent(downEvent)
-            audioManager.dispatchMediaKeyEvent(upEvent)
+            val am = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PAUSE))
+            am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PAUSE))
+            am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_STOP))
+            am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_STOP))
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
 
+    fun sendMediaNext(context: Context) {
+        try {
+            val am = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_NEXT))
+            am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_NEXT))
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    fun sendMediaPlay(context: Context) {
+        try {
+            val am = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE))
+            am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE))
+            am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY))
+            am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY))
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    /**
+     * Maniobra Kill & Relaunch pura:
+     * 1. Detiene y mata Spotify.
+     * 2. Vuelve a abrir Spotify tras 500ms.
+     * 3. Descarta el buffer del anuncio con Next y envía Play para reanudar la música.
+     */
     fun restartAndResume(context: Context, onComplete: (() -> Unit)? = null) {
+        sendMediaStop(context)
         killSpotify(context)
+
         Handler(Looper.getMainLooper()).postDelayed({
             relaunchSpotify(context)
+
             Handler(Looper.getMainLooper()).postDelayed({
-                sendMediaPlay(context)
-                onComplete?.invoke()
-            }, 1200)
+                sendMediaNext(context)
+                Handler(Looper.getMainLooper()).postDelayed({
+                    sendMediaPlay(context)
+                    onComplete?.invoke()
+                }, 300)
+            }, 1000)
         }, 500)
     }
 }

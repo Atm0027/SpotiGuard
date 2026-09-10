@@ -27,7 +27,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvSkipCount: TextView
     private lateinit var tvTimeSaved: TextView
     private lateinit var btnToggleService: MaterialButton
-    private lateinit var btnOperationMode: MaterialButton
     private lateinit var btnSpotifySettings: MaterialButton
     private lateinit var btnBatteryOptimization: MaterialButton
     private lateinit var btnOpenSpotify: MaterialButton
@@ -80,7 +79,6 @@ class MainActivity : AppCompatActivity() {
         tvSkipCount = findViewById(R.id.tvSkipCount)
         tvTimeSaved = findViewById(R.id.tvTimeSaved)
         btnToggleService = findViewById(R.id.btnToggleService)
-        btnOperationMode = findViewById(R.id.btnOperationMode)
         btnSpotifySettings = findViewById(R.id.btnSpotifySettings)
         btnBatteryOptimization = findViewById(R.id.btnBatteryOptimization)
         btnOpenSpotify = findViewById(R.id.btnOpenSpotify)
@@ -124,17 +122,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        btnOperationMode.setOnClickListener {
-            if (SpotiGuardService.operationMode == "mute") {
-                SpotiGuardService.operationMode = "restart"
-                btnOperationMode.text = "Modo: Saltar Rápido (Skip)"
-                Toast.makeText(this, "Modo: Reiniciar Spotify para saltar el anuncio", Toast.LENGTH_SHORT).show()
-            } else {
-                SpotiGuardService.operationMode = "mute"
-                btnOperationMode.text = "Modo: Silenciar Anuncio (Mute)"
-                Toast.makeText(this, "Modo: Silenciar anuncio en segundo plano", Toast.LENGTH_SHORT).show()
-            }
-        }
 
         btnSpotifySettings.setOnClickListener {
             Toast.makeText(

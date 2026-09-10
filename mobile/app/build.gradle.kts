@@ -6,7 +6,7 @@ plugins {
 val codigoVersion: Int =
     providers.gradleProperty("spotiguardVersionCode").orNull?.toIntOrNull()
         ?: System.getenv("SPOTIGUARD_VERSION_CODE")?.toIntOrNull()
-        ?: 11
+        ?: 12
 
 val nombreVersion: String =
     providers.gradleProperty("spotiguardVersionName").orNull

@@ -1,4 +1,4 @@
-﻿package com.spotiskip.guardian.services
+package com.spotiskip.guardian.services
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -16,25 +16,20 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.spotiskip.guardian.MainActivity
 import com.spotiskip.guardian.R
-import com.spotiskip.guardian.utils.AudioController
 import com.spotiskip.guardian.utils.SpotifyController
 
 /**
  * Servicio en primer plano de SpotiGuard.
- * Escucha los eventos nativos que emite la app oficial de Spotify (Broadcast Intents)
- * cuando la opción "Estado de emisión del dispositivo" está activa en Spotify.
- *
- * Arquitectura 100% estándar y segura:
- * - NO requiere permisos de accesibilidad (BIND_ACCESSIBILITY_SERVICE).
- * - NO requiere permisos de escucha de notificaciones (BIND_NOTIFICATION_LISTENER_SERVICE).
- * - No activa alertas de Google Play Protect por ser un servicio de reproducción multimedia estándar.
+ * Modo de operación único y exclusivo:
+ * Al detectar un anuncio, CIERRA Spotify, lo VUELVE A ABRIR y le DA AL PLAY.
+ * Sin silenciamientos de audio ni mutaciones.
  */
 class SpotiGuardService : Service() {
 
-    private lateinit var audioController: AudioController
     private var isReceiverRegistered = false
     private var lastTrack = ""
     private var isAdActive = false
+    private var lastSkipTimestamp = 0L
 
     companion object {
         const val CHANNEL_ID = "spotiguard_monitor_channel"
@@ -52,7 +47,6 @@ class SpotiGuardService : Service() {
             private set
 
         var totalAdsSkipped = 0
-        var operationMode = "mute" // "mute" o "restart"
     }
 
     private val spotifyReceiver = object : BroadcastReceiver() {
@@ -61,9 +55,11 @@ class SpotiGuardService : Service() {
 
             when (intent.action) {
                 "com.spotify.music.metadatachanged" -> handleMetadataChanged(intent)
-                "com.spotify.music.playbackstatechanged" -> handlePlaybackStateChanged(intent)
-                "com.spotify.music.queuechanged" -> {
-                    // Actualización de cola
+                "com.spotify.music.playbackstatechanged" -> {
+                    val isPlaying = intent.getBooleanExtra("playing", false)
+                    if (!isPlaying) {
+                        isAdActive = false
+                    }
                 }
             }
         }
@@ -71,7 +67,6 @@ class SpotiGuardService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        audioController = AudioController(applicationContext)
         createNotificationChannel()
     }
 
@@ -90,7 +85,7 @@ class SpotiGuardService : Service() {
     }
 
     private fun startInForeground() {
-        val notification = buildForegroundNotification("Protegiendo tu reproducción de Spotify", "● Activo y escuchando")
+        val notification = buildForegroundNotification("Protección Activa", "Saltando anuncios mediante Reinicio y Play")
         
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(
@@ -152,7 +147,6 @@ class SpotiGuardService : Service() {
         val filter = IntentFilter().apply {
             addAction("com.spotify.music.metadatachanged")
             addAction("com.spotify.music.playbackstatechanged")
-            addAction("com.spotify.music.queuechanged")
         }
 
         ContextCompat.registerReceiver(
@@ -176,37 +170,39 @@ class SpotiGuardService : Service() {
     }
 
     private fun handleMetadataChanged(intent: Intent) {
-        val id = intent.getStringExtra("id") ?: ""
+        val id = intent.getStringExtra("id")?.trim() ?: ""
         val track = intent.getStringExtra("track")?.trim() ?: ""
         val artist = intent.getStringExtra("artist")?.trim() ?: ""
         val album = intent.getStringExtra("album")?.trim() ?: ""
         val isPlaying = intent.getBooleanExtra("playing", true)
-        val length = intent.getIntExtra("length", 0)
 
-        val isAd = isAdvertisement(id, track, artist, album, length)
+        if (!isPlaying) {
+            isAdActive = false
+            return
+        }
+
+        val isAd = isAdvertisement(id, track, artist, album)
 
         if (isAd) {
-            if (!isAdActive) {
-                isAdActive = true
-                totalAdsSkipped++
+            val now = System.currentTimeMillis()
+            // Evitar bucles continuos (cooldown de 3.5 segundos entre reinicios)
+            if (now - lastSkipTimestamp < 3500) {
+                return
+            }
+            lastSkipTimestamp = now
+            isAdActive = true
+            totalAdsSkipped++
 
-                if (operationMode == "restart") {
-                    updateNotification("⚡ Saltando anuncio...", track.ifEmpty { "Spotify Ad" })
-                    SpotifyController.restartAndResume(applicationContext) {
-                        isAdActive = false
-                    }
-                } else {
-                    audioController.mute()
-                    updateNotification("⚡ Silenciando anuncio", track.ifEmpty { "Anuncio de Spotify" })
-                }
+            val adLabel = track.ifEmpty { "Anuncio" }
+            updateNotification("⚡ Saltando anuncio...", adLabel)
+            broadcastUpdate("⚡ Saltando: $adLabel", true)
 
-                broadcastUpdate("⚡ Anuncio detectado: ${track.ifEmpty { "Publicidad" }}", true)
+            // Maniobra pura: Cerrar Spotify -> Abrir Spotify -> Darle al Play
+            SpotifyController.restartAndResume(applicationContext) {
+                isAdActive = false
             }
         } else {
-            if (isAdActive) {
-                isAdActive = false
-                audioController.unmute()
-            }
+            isAdActive = false
             val displayTrack = if (artist.isNotEmpty()) "$track - $artist" else track
             if (displayTrack.isNotEmpty() && displayTrack != lastTrack) {
                 lastTrack = displayTrack
@@ -216,34 +212,36 @@ class SpotiGuardService : Service() {
         }
     }
 
-    private fun handlePlaybackStateChanged(intent: Intent) {
-        val isPlaying = intent.getBooleanExtra("playing", false)
-        if (!isPlaying && isAdActive) {
-            isAdActive = false
-            audioController.unmute()
-            updateNotification("SpotiGuard Activo", "Spotify en pausa")
-            broadcastUpdate("Spotify en pausa", false)
-        }
-    }
-
+    /**
+     * Detección infalible de anuncios:
+     * - Toda canción real en Spotify empieza obligatoriamente por 'spotify:track:'.
+     * - Todo podcast real empieza por 'spotify:episode:'.
+     * - Cualquier cuña comercial o anuncio (Vinted, Amazon, Spotify, etc.) tiene un URI
+     *   que NO es de pista musical estándar, o contiene palabras clave publicitarias.
+     */
     private fun isAdvertisement(
         id: String,
         track: String,
         artist: String,
-        album: String,
-        length: Int
+        album: String
     ): Boolean {
-        // 1. Detección por URI de Spotify
-        val idLower = id.lowercase()
-        if (idLower.startsWith("spotify:ad:") || idLower.contains(":ad:") || idLower.contains("advertisement")) {
+        val idLower = id.lowercase().trim()
+
+        // 1. REGLA DE ORO: Si no es un track musical ni episodio, ES UN ANUNCIO
+        if (idLower.isNotEmpty()) {
+            if (!idLower.startsWith("spotify:track:") && !idLower.startsWith("spotify:episode:")) {
+                return true
+            }
+        } else {
+            // Si el ID está completamente vacío, es una cuña comercial
             return true
         }
 
+        // 2. Si el ID fuera un track simulado, comprobar palabras clave publicitarias
         val trackLower = track.lowercase()
         val artistLower = artist.lowercase()
         val albumLower = album.lowercase()
 
-        // 2. Palabras clave conocidas en títulos de anuncios en varios idiomas
         val adKeywords = listOf(
             "advertisement", "publicidad", "anuncio", "anuncios", "promo",
             "spotify free", "werbung", "publicite", "publicité", "publicidade", "pubblicità"
@@ -254,13 +252,8 @@ class SpotiGuardService : Service() {
             }
         }
 
-        // 3. Título genérico "Spotify" sin artista
+        // 3. Título genérico "Spotify" sin artista real
         if (trackLower == "spotify" && (artist.isEmpty() || artistLower == "spotify")) {
-            return true
-        }
-
-        // 4. Si no es un track estándar y carece de artista y álbum
-        if (!idLower.startsWith("spotify:track:") && (artist.isEmpty() || album.isEmpty())) {
             return true
         }
 
@@ -286,9 +279,6 @@ class SpotiGuardService : Service() {
 
     private fun stopForegroundService() {
         unregisterSpotifyReceiver()
-        if (::audioController.isInitialized && audioController.isCurrentlyMuted()) {
-            audioController.unmute()
-        }
         isRunning = false
         broadcastServiceState(false)
         stopForeground(STOP_FOREGROUND_REMOVE)
