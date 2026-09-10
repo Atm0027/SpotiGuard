@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.spec
+build/
+dist/
+.venv/
+env/
+venv/
+install_android_sdk.py
+
+# Android
+.gradle/
+**/build/
+!mobile/app/build/outputs/apk/debug/app-debug.apk
+local.properties
+.idea/
+*.iml
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini

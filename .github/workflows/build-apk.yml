@@ -1,0 +1,36 @@
+name: Compilar APK de SpotiSkip Android
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Dar permisos de ejecución a gradlew
+        run: chmod +x mobile/gradlew
+
+      - name: Compilar APK con Gradle
+        run: |
+          cd mobile
+          ./gradlew assembleDebug --stacktrace
+
+      - name: Subir APK generado como Artefacto Descargable
+        uses: actions/upload-artifact@v4
+        with:
+          name: SpotiSkip-Mobile-APK
+          path: mobile/app/build/outputs/apk/debug/app-debug.apk

@@ -1,0 +1,8 @@
+# Dependencias para SpotiSkip / SpotiGuard (PC Guardian)
+pywin32>=306
+psutil>=5.9.0
+pycaw>=20240210
+comtypes>=1.2.0
+PyQt6>=6.5.0
+winsdk>=1.0.0b10
+

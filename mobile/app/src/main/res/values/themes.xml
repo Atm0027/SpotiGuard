@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.SpotiSkip" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/cyan_dim</item>
+        <item name="colorPrimaryVariant">@color/cyan_accent</item>
+        <item name="colorOnPrimary">@color/text_primary</item>
+        <item name="android:statusBarColor">@color/bg_dark</item>
+        <item name="android:windowBackground">@color/bg_dark</item>
+    </style>
+</resources>

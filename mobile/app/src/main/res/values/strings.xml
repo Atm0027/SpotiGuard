@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">SpotiSkip Guardian</string>
+    <string name="notification_service_name">SpotiSkip Monitor de Anuncios</string>
+    <string name="accessibility_service_name">SpotiSkip Gestor de Reinicio</string>
+    <string name="accessibility_service_desc">Permite a SpotiSkip detectar anuncios en pantalla y reiniciar automáticamente Spotify para continuar la música.</string>
+</resources>

@@ -1,0 +1,1 @@
+# Módulo UI para SpotiSkip
