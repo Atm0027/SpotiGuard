@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">SpotiGuard</string>
-    <string name="notification_service_name">SpotiGuard Monitor de Anuncios</string>
-    <string name="accessibility_service_name">SpotiGuard Gestor de Reinicio</string>
-    <string name="accessibility_service_desc">Permite a SpotiGuard detectar anuncios y silenciarlos/reiniciar Spotify para continuar la música sin interrupciones.</string>
+    <string name="service_name">SpotiGuard Monitor</string>
+    <string name="service_desc">Protección autónoma contra anuncios de Spotify</string>
 </resources>

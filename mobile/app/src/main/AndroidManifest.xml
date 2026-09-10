@@ -2,9 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Permisos de Sistema Seguros y Estándar -->
+    <!-- Permisos de Sistema Estándar y Seguros (Sin permisos sensibles ni de accesibilidad) -->
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
 
     <application
         android:allowBackup="true"
@@ -23,16 +25,11 @@
             </intent-filter>
         </activity>
 
-        <!-- Servicio de escucha de notificaciones de Spotify (Core de detección) -->
+        <!-- Servicio de Monitorización Segura en Primer Plano -->
         <service
-            android:name=".services.SpotifyNotificationListener"
-            android:label="@string/notification_service_name"
-            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.service.notification.NotificationListenerService" />
-            </intent-filter>
-        </service>
+            android:name=".services.SpotiGuardService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
 
     </application>
 

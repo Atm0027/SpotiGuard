@@ -1,50 +1,55 @@
 # SpotiGuard Mobile (Android)
 
-Aplicación nativa de Android que detecta en tiempo real los anuncios de Spotify y los neutraliza de forma automática mediante **Reinicio Rápido (Skip & Relaunch)** o **Silenciador Furtivo (Auto-Mute Inteligente)**.
+Aplicación nativa de Android que detecta en tiempo real los anuncios de Spotify y los neutraliza de forma automática mediante **Silenciador Inteligente (Auto-Mute)** o **Reinicio Rápido (Skip & Relaunch)**.
 
 ---
 
-## 📱 ¿Cómo Funciona en el Móvil?
+## 📱 ¿Cómo Funciona en el Móvil? (Nueva Arquitectura v1.0.2-8)
 
-1. **Detección Automática 24/7**:
-   - Utiliza `NotificationListenerService`, un servicio oficial del sistema Android que el sistema operativo mantiene activo de forma desatendida.
-   - En cuanto Spotify empieza a reproducir música o un anuncio, Android envía los metadatos de la notificación (`EXTRA_TITLE` y `EXTRA_TEXT`) a SpotiGuard.
-2. **Identificación de Anuncios**:
-   - Detecta palabras clave publicitarias (`Advertisement`, `Publicidad`, etc.) o títulos que no contienen artista mientras la pista se reproduce.
+1. **Servicio en Primer Plano Estándar (`SpotiGuardService`)**:
+   - Funciona a través de un servicio en primer plano oficial de Android (`mediaPlayback`).
+   - Mantiene una notificación de estado silenciosa y elegante, garantizando que el sistema operativo nunca congele la app en segundo plano.
+2. **Escucha de Emisiones Nativas de Spotify (`BroadcastReceiver`)**:
+   - Cuando activas **"Estado de emisión del dispositivo"** en Spotify, la app oficial de Spotify envía automáticamente eventos del sistema:
+     - `com.spotify.music.metadatachanged`
+     - `com.spotify.music.playbackstatechanged`
+     - `com.spotify.music.queuechanged`
+   - SpotiGuard intercepta estos eventos al instante, analizando los identificadores de pista (`id`, `track`, `artist`, `album`).
 3. **Mecanismos de Neutralización**:
-   - **Modo Silenciador Inteligente (Recomendado para Móvil)**: Silencia el flujo multimedia (`STREAM_MUSIC`) a 0 al milisegundo en que entra el anuncio publicitario y restaura el volumen exacto original al comenzar la siguiente canción, sin ninguna interrupción visual.
-   - **Modo Reinicio Rápido**: Cierra el proceso de Spotify (`killBackgroundProcesses`) y relanza la aplicación enviando el evento multimedia `KEYCODE_MEDIA_PLAY_PAUSE` para saltar a la siguiente canción.
+   - **Modo Silenciador Inteligente (Recomendado)**: Silencia el flujo multimedia (`STREAM_MUSIC`) a 0 en el milisegundo en que entra el anuncio publicitario y restaura el volumen exacto al comenzar la siguiente canción, sin ninguna interrupción visual ni parpadeos.
+   - **Modo Reinicio Rápido**: Cierra el proceso de Spotify y relanza la aplicación enviando el evento multimedia de reanudación para saltar a la siguiente canción.
 
 ---
 
 ## 📲 Descarga e Instalación del APK Oficial
 
-- **Descarga Directa del APK**: **[Descargar SpotiGuard-1.0.1-5.apk (Release v1.0.1-5)](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.1-5/SpotiGuard-1.0.1-5.apk)**
-- **Firma Oficial de Producción**: Firmado con Keystore Release propio con esquemas **v1 (JAR), v2 y v3** activos para máxima compatibilidad con Android 8.0 hasta Android 14+.
-- **Permisos 100% Seguros y Limpios**: Se ha eliminado cualquier servicio de accesibilidad (`canRetrieveWindowContent`) para no activar la heurística de seguridad de Play Protect (*"Aplicación bloqueada para proteger tu dispositivo"*).
+- **Descarga Directa del APK**: **[Descargar SpotiGuard-1.0.2-8.apk (Release v1.0.2-8)](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.2-8/SpotiGuard-1.0.2-8.apk)** *(4.51 MB)*
+- **Firma Oficial de Producción**: Firmado con Keystore Release propio con esquemas **v2 y v3** activos para máxima compatibilidad con Android 8.0 hasta Android 15+.
+- **Cero Permisos Sensibles (Solución Definitiva de Bloqueo)**: Se ha **eliminado por completo `BIND_NOTIFICATION_LISTENER_SERVICE` y `BIND_ACCESSIBILITY_SERVICE`**. Al no solicitar ningún permiso de interceptación de notificaciones ni accesibilidad, **Google Play Protect ya no bloquea la instalación**.
 
-### 🛡️ Pasos de Instalación en Android:
+### 🛡️ Opciones de Instalación en Android:
 
-1. **Aviso de Google Play Protect ("Desarrollador desconocido")**:
-   - Al ser una aplicación descargada fuera de la tienda oficial, Play Protect puede pedir confirmación.
-   - Pulsa en **"Más detalles"** (o la pequeña flecha desplegable).
-   - Pulsa en **"Instalar de todas formas"**.
-2. **Permiso de Fuentes Desconocidas**:
-   - Si tu navegador (Chrome) o gestor de archivos solicita permisos:
-   - Ve a **Ajustes -> Aplicaciones -> Acceso especial -> Instalar aplicaciones desconocidas** -> Activa el permiso para tu navegador o explorador de archivos.
-3. **Bloqueador automático en Samsung (OneUI 6 / Android 14)**:
-   - Si utilizas Samsung con Knox y el bloqueador automático activo:
-   - Ve a **Ajustes -> Seguridad y privacidad -> Bloqueador automático** y desactívalo temporalmente para permitir la instalación.
+#### Opción 1: Instalación Normal en el Móvil (Recomendada)
+1. Descarga el APK en tu teléfono.
+2. Abre la app **Mis Archivos / Files / Gestor de archivos** de tu teléfono, ve a la carpeta **Descargas (Downloads)** y pulsa el archivo `SpotiGuard-1.0.2-8.apk`.
+3. Pulsa **Instalar**. *(Si aparece aviso de origen desconocido, concede permiso a tu app de Archivos).*
+
+#### Opción 2: Instalación Directa en 1 Clic desde el PC (Script ADB)
+1. Conecta tu teléfono al ordenador con cable USB y asegúrate de tener activada la **Depuración por USB**.
+2. En la carpeta del proyecto en tu PC, haz doble clic en **`instalar_android.bat`**.
+3. El script detectará tu dispositivo e instalará el APK directamente en el móvil, omitiendo cualquier pantalla de confirmación.
 
 ---
 
-## ⚙️ Configuración Inicial en el Teléfono
+## ⚙️ Configuración Inicial en 2 Pasos (Solo la primera vez)
 
 Una vez instalada la app en tu móvil:
-1. Abre **SpotiGuard**.
-2. Pulsa en **"1. Activar Acceso a Notificaciones"**:
-   - Te llevará a los ajustes del sistema de Android.
-   - Busca **SpotiGuard** en la lista y activa la casilla para permitir el acceso.
-3. Pulsa en **"2. Desactivar Optimización de Batería"**:
-   - Selecciona **"Sin restricciones"** para SpotiGuard (evita que Android congele el monitor al apagar la pantalla).
-4. ¡Listo! Abre Spotify y pon música. Cada vez que entre un anuncio publicitario, SpotiGuard lo silenciará automáticamente.
+1. **Activar "Estado de emisión" en Spotify**:
+   - Abre la app oficial de **Spotify**.
+   - Entra en **Ajustes** (icono de rueda dentada ⚙️ arriba a la derecha).
+   - Desplázate hacia abajo y activa el interruptor: **"Estado de emisión del dispositivo"** *(Permite a otras aplicaciones saber lo que estás escuchando)*.
+2. **Iniciar SpotiGuard**:
+   - Abre **SpotiGuard**.
+   - Pulsa el botón grande: **"🛡️ Activar Protección SpotiGuard"**.
+   - Opcional: Pulsa en **"Desactivar Optimización de Batería"** y marca "Sin restricciones".
+3. ¡Listo! Cada vez que comience un anuncio en Spotify, SpotiGuard lo detectará y lo silenciará automáticamente en segundo plano.
