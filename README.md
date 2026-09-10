@@ -106,13 +106,18 @@ Si al intentar instalar el APK anterior te apareció el mensaje de bloqueo preve
 2. **¿Cómo se ha corregido?**:
    - Se ha **eliminado por completo el servicio de accesibilidad** y cualquier permiso innecesario.
    - SpotiGuard opera **100% a través del servicio estándar de notificaciones (`NotificationListenerService`) y control de audio (`AudioManager`)**, que son las APIs oficiales, limpias y no invasivas para detectar anuncios y mutearlos sin saltar ninguna alarma de seguridad.
-3. **Instalación paso a paso**:
-   - Abre el archivo descargado **`SpotiGuard-1.0.0-4.apk`**.
-   - Si tu navegador o explorador te solicita autorización para instalar apps desconocidas, pulsa en *Ajustes* y activa **"Permitir desde esta fuente"**.
-   - Si Google Play Protect muestra una ventana de confirmación al ser una app nueva:
-     - Pulsa en **"Más detalles"** (o la flecha desplegable).
-     - Pulsa en **"Instalar de todas formas"**.
-   - *(En teléfonos Samsung)*: Si tienes activado el "Bloqueador automático" de OneUI 6/Knox (*Ajustes -> Seguridad y privacidad -> Bloqueador automático*), desactívalo momentáneamente para permitir la instalación.
+3. **Guía de Solución de Errores de Instalación (Paso a Paso)**:
+   - **Caso A: Si ya tenías instalada una versión anterior (Conflicto de firmas)**:
+     - Android rechaza automáticamente cualquier actualización si la app previa se instaló con otra clave (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`).
+     - **Solución**: Busca en las aplicaciones de tu móvil si existe **SpotiSkip** o **SpotiGuard** y **desinstálala por completo** antes de instalar el nuevo APK.
+   - **Caso B: Samsung Galaxy con One UI 6 / Android 14 (Bloqueador automático de Knox)**:
+     - Si aparece *"Para proteger tu dispositivo, el Bloqueador automático bloqueó la instalación..."* y solo permite pulsar 'Entendido':
+     - **Solución**: Ve a *Ajustes -> Seguridad y privacidad -> Bloqueador automático* y **desactívalo** momentáneamente para permitir la instalación de APKs.
+   - **Caso C: Pantalla de Google Play Protect ("Desarrollador desconocido")**:
+     - **Solución**: Pulsa en **"Más detalles"** y luego en **"Instalar de todas formas"**.
+     - Si tu dispositivo no muestra el botón de instalar de todas formas, abre la **Google Play Store -> Pulsa tu Perfil -> Play Protect -> ⚙️ Ajustes -> Desactiva 'Analizar las aplicaciones con Play Protect'** durante la instalación.
+   - **Caso D: Abrir el APK desde la app "Archivos"**:
+     - A veces los navegadores (Chrome) retienen los archivos en una sandbox de seguridad. Abre la app **Mis Archivos / Files / Gestor de archivos**, ve a la carpeta **Descargas (Downloads)** y pulsa el APK desde allí.
 
 ### ⚙️ Configuración Inicial en el Móvil:
 1. Abre **SpotiGuard** en tu teléfono.
