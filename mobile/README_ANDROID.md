@@ -133,6 +133,7 @@ Si requieres mantener el **Bloqueador Automático de Samsung** encendido de form
    - Inicias sesión con tu cuenta oficial de Spotify: sincroniza tus playlists, biblioteca y recomendaciones.
    - Reproduce el stream en alta calidad vía YouTube Music / Piped con **0 anuncios de audio y vídeo** y reproducción en segundo plano.
    - No requiere Shizuku, ni Root, ni permisos de accesibilidad, y es 100% compatible con el Bloqueador Automático de Samsung.
+   - *Nota de Configuración (Error 401)*: Si Spotube muestra `DioException 401`, ve a *Configuración ⚙️ -> Plugins* y selecciona **MusicBrainz** como *"Fuente de metadatos predeterminada"* para cargar música sin bloqueos de API de Spotify.
 
 2. **RiMusic / ViMusic (Catálogo completo de música libre)**:
    - Apps nativas Open Source con el catálogo de YouTube Music.
