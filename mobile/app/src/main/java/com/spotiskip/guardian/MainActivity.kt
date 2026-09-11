@@ -12,7 +12,9 @@ import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
+import android.text.TextUtils
 import android.view.View
+import android.view.accessibility.AccessibilityManager
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -20,6 +22,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
+import com.spotiskip.guardian.services.SpotiGuardAccessibilityService
 import com.spotiskip.guardian.services.SpotiGuardService
 import com.spotiskip.guardian.utils.SpotifyController
 
@@ -32,6 +35,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnToggleService: MaterialButton
     private lateinit var btnSpotifySettings: MaterialButton
     private lateinit var btnBatteryOptimization: MaterialButton
+    private lateinit var btnAccessibilityService: MaterialButton
     private lateinit var layoutRequirementsSuccess: LinearLayout
     private lateinit var btnOpenSpotify: MaterialButton
 
@@ -85,6 +89,7 @@ class MainActivity : AppCompatActivity() {
         btnToggleService = findViewById(R.id.btnToggleService)
         btnSpotifySettings = findViewById(R.id.btnSpotifySettings)
         btnBatteryOptimization = findViewById(R.id.btnBatteryOptimization)
+        btnAccessibilityService = findViewById(R.id.btnAccessibilityService)
         layoutRequirementsSuccess = findViewById(R.id.layoutRequirementsSuccess)
         btnOpenSpotify = findViewById(R.id.btnOpenSpotify)
 
@@ -161,6 +166,20 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        btnAccessibilityService.setOnClickListener {
+            Toast.makeText(
+                this,
+                "Busca 'SpotiGuard' o 'SpotiGuard Monitor' y actívalo para cerrar Spotify automáticamente",
+                Toast.LENGTH_LONG
+            ).show()
+            try {
+                val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                startActivity(intent)
+            } catch (e: Exception) {
+                Toast.makeText(this, "Abre Ajustes -> Accesibilidad y activa SpotiGuard", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         btnOpenSpotify.setOnClickListener {
             if (!SpotiGuardService.isRunning) {
                 startSpotiGuardService()
@@ -181,15 +200,39 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun isAccessibilityServiceEnabled(context: Context): Boolean {
+        if (SpotiGuardAccessibilityService.isServiceRunning()) {
+            return true
+        }
+        val expectedServiceName = "${context.packageName}/${SpotiGuardAccessibilityService::class.java.canonicalName}"
+        val enabledServices = Settings.Secure.getString(
+            context.contentResolver,
+            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        ) ?: return false
+
+        val colonSplitter = TextUtils.SimpleStringSplitter(':')
+        colonSplitter.setString(enabledServices)
+        while (colonSplitter.hasNext()) {
+            val componentName = colonSplitter.next()
+            if (componentName.equals(expectedServiceName, ignoreCase = true) ||
+                componentName.contains(SpotiGuardAccessibilityService::class.java.simpleName, ignoreCase = true)) {
+                return true
+            }
+        }
+        return false
+    }
+
     private fun updateRequirementsUI() {
         val prefs = getSharedPreferences("spotiguard_prefs", Context.MODE_PRIVATE)
         val broadcastConfigured = prefs.getBoolean("spotify_broadcast_enabled", false)
         val batteryOptimized = isBatteryOptimizedIgnored(this)
+        val accessibilityConfigured = isAccessibilityServiceEnabled(this) || SpotifyController.tryRootForceStop()
 
         btnSpotifySettings.visibility = if (broadcastConfigured) View.GONE else View.VISIBLE
         btnBatteryOptimization.visibility = if (batteryOptimized) View.GONE else View.VISIBLE
+        btnAccessibilityService.visibility = if (accessibilityConfigured) View.GONE else View.VISIBLE
 
-        if (broadcastConfigured && batteryOptimized) {
+        if (broadcastConfigured && batteryOptimized && accessibilityConfigured) {
             layoutRequirementsSuccess.visibility = View.VISIBLE
         } else {
             layoutRequirementsSuccess.visibility = View.GONE

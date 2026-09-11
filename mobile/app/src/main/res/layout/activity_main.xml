@@ -231,6 +231,17 @@
                     app:backgroundTint="#1E293B"
                     app:cornerRadius="8dp" />
 
+                <!-- Botón Accesibilidad SpotiGuard -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAccessibilityService"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="3. Activar Accesibilidad SpotiGuard"
+                    android:textColor="@color/text_primary"
+                    app:backgroundTint="#1E293B"
+                    app:cornerRadius="8dp" />
+
                 <!-- Indicador cuando todos los requisitos están completados -->
                 <LinearLayout
                     android:id="@+id/layoutRequirementsSuccess"
@@ -254,7 +265,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Requisitos configurados: Emisión de Spotify y Batería sin restricciones verificados."
+                        android:text="Requisitos listos: Emisión, Batería y Accesibilidad verificados."
                         android:textColor="#34D399"
                         android:textSize="12sp"
                         android:textStyle="bold" />

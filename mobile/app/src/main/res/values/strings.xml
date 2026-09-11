@@ -2,4 +2,5 @@
     <string name="app_name">SpotiGuard</string>
     <string name="service_name">SpotiGuard Monitor</string>
     <string name="service_desc">Protección autónoma contra anuncios de Spotify</string>
+    <string name="accessibility_service_description">Permite a SpotiGuard cerrar y reiniciar Spotify automáticamente para saltar anuncios comerciales.</string>
 </resources>
