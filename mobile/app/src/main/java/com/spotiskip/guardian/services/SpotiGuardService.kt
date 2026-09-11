@@ -47,7 +47,6 @@ class SpotiGuardService : Service() {
     private var currentTrackDurationMs = 0L
     private var currentPlaybackPosition = 0L
     private var lastStateTimestamp = 0L
-    private var isPlaybackActive = false
 
     private val watchdogHandler = Handler(Looper.getMainLooper())
     private val watchdogRunnable = Runnable {
@@ -74,6 +73,7 @@ class SpotiGuardService : Service() {
             private set
 
         var totalAdsSkipped = 0
+        var isPlaybackActive: Boolean = false
     }
 
     private val spotifyReceiver = object : BroadcastReceiver() {
@@ -299,6 +299,7 @@ class SpotiGuardService : Service() {
         }
         lastSkipTimestamp = now
         totalAdsSkipped++
+        isPlaybackActive = false
 
         val adLabel = label.ifEmpty { "Anuncio" }
         updateNotification("⚡ Saltando anuncio...", adLabel)

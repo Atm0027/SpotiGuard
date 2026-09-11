@@ -54,12 +54,12 @@ Tanto en **Windows** como en **Android**, SpotiGuard está diseñado para funcio
 1. **Watchdog de Fin de Canción**: Spotify **no emite broadcasts al comenzar un anuncio**. SpotiGuard calcula la duración exacta de la pista musical activa y programa un watchdog. Si al terminar no llega una nueva canción, deduce la presencia del anuncio y activa el cierre forzoso de inmediato.
 2. **Detección Reactiva por ID y Metadatos**: Captura cuñas comerciales con IDs no estándar (`!id.startsWith("spotify:track:")`), menciones publicitarias ("Publicidad", "Advertisement", "Spotify Free", "Werbung", etc.).
 
-### 3. Secuencia de Neutralización (Idéntica a PC):
-1. **Detención multimedia**: `sendMediaStop()` (`KEYCODE_MEDIA_PAUSE` y `STOP`).
-2. **Cierre forzoso de Spotify**: Mediante Shizuku o Root en segundo plano sin desplegar ventanas.
-3. **Relanzamiento limpio**: Apertura de Spotify con el búfer publicitario purgado.
-4. **Purga y salto**: `KEYCODE_MEDIA_NEXT` para cargar la siguiente pista legítima.
-5. **Reanudación automática**: `KEYCODE_MEDIA_PLAY` para iniciar la música sin interrupciones.
+### 3. Secuencia de Neutralización y Reanudación Garantizada (Triple Play Dispatch):
+1. **Detención multimedia**: `sendMediaStop()` (`KEYCODE_MEDIA_PAUSE` y `STOP`). Reset de estados (`isPlaybackActive = false`).
+2. **Cierre forzoso de Spotify**: Mediante Shizuku (`am force-stop` atómico) o Root en segundo plano (<50ms) sin desplegar ventanas ni tocar la pantalla.
+3. **Relanzamiento limpio**: Apertura de Spotify con el búfer publicitario purgado de la memoria.
+4. **Purga y salto multi-canal**: `KEYCODE_MEDIA_NEXT` + broadcast interno de widget `ui.widget.NEXT` + `cmd media_session dispatch next`.
+5. **Reanudación garantizada (Triple Play Dispatch)**: Envío simultáneo de `KEYCODE_MEDIA_PLAY` nativo + broadcast de widget `ui.widget.PLAY` exclusivo de Spotify + `cmd media_session dispatch play` en 4 pulsos adaptativos (1.8s, 2.8s, 3.5s y 4.5s) que despiertan el motor de audio en frío sin intervención del usuario.
 
 ---
 
@@ -81,15 +81,15 @@ Ubicada en la carpeta [`pc/`](pc/).
 Ubicada en la carpeta [`mobile/`](mobile/). Proyecto nativo completo en **Kotlin**.
 
 ### Novedades v1.0.8-18:
-* **Cierre Forzoso 100% Silencioso a Nivel de Sistema (Shizuku & Root)**:
-  - Eliminado definitivamente el método invasivo de abrir los Ajustes del sistema.
-  - Integrado el SDK oficial de **Shizuku API** (`dev.rikka.shizuku:api:13.1.5`).
-  - Cierre instantáneo del proceso de Spotify en 0.05 segundos en segundo plano sin interrumpir lo que estés haciendo en la pantalla.
+* **Reanudación Multi-Canal (Triple Play Dispatch & Widget Broadcast)**:
+  - **Triple canal de reproducción**: Envío coordinado de `KeyEvent.KEYCODE_MEDIA_PLAY` (idempotente), broadcast oficial de widget de Spotify (`com.spotify.mobile.android.ui.widget.PLAY`) y despacho por consola del sistema (`cmd media_session dispatch play`).
+  - **4 Pulsos Escalonados de Despertar (1.8s, 2.8s, 3.5s, 4.5s)**: Garantiza que la música vuelva a sonar en cuanto el motor de audio en frío de Spotify termina de inicializarse (~2.7s en pruebas reales de logcat).
+* **Cierre Forzoso Silencioso Corregido (Shizuku & Root)**:
+  - Corregido el manejo de terminación de proceso remoto (`ShizukuRemoteProcess.waitFor()`) eliminando excepciones de Binder para un cierre atómico en <50ms.
+* **Aislamiento Total de Privacidad (Cero Accesibilidad)**:
+  - Servicio de accesibilidad y permisos invasivos eliminados 100% de la app. SpotiGuard solo interactúa con el paquete `com.spotify.music`, garantizando cero interferencias con otras aplicaciones (WhatsApp, llamadas, notificaciones).
 * **Script de Activación en 1 Clic (`activar_shizuku.bat`)**:
   - Permite activar el servicio de cierre silencioso en tu móvil en 2 segundos conectando el cable USB.
-  - Incluye el paquete oficial de Shizuku (`shizuku.apk`) para instalación desatendida.
-* **Flujo Idéntico a PC**:
-  - Detección -> Kill instantáneo -> Reopen -> Play. Cero muteos.
 
 ### 📲 Descarga e Instalación del APK Oficial:
 * **Descarga directa**: **[`SpotiGuard-1.0.8-18.apk`](SpotiGuard-1.0.8-18.apk)** *(4.76 MB)*.

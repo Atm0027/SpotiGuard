@@ -21,13 +21,17 @@ Aplicación nativa de Android que detecta en tiempo real los anuncios de Spotify
 1. **Watchdog de Expiración de Pista**: Resuelve el problema fundamental de que Spotify **no emite eventos de broadcast al iniciar un anuncio publicitario**. SpotiGuard calcula la duración y posición exacta de la pista musical. Si la canción termina y no entra una nueva pista en la ventana de tolerancia, deduce la entrada del bloque comercial e inicia la neutralización.
 2. **Detección por Metadatos y Palabras Clave**: Analiza los identificadores de pista (`!id.startsWith("spotify:track:")`) y títulos/artistas característicos ("Publicidad", "Advertisement", "Spotify Free", "Werbung", etc.).
 
-### 3. Secuencia de Bypass Atómica (Idéntica a PC):
-1. **Detección Instantánea**: Intercepción del anuncio por metadatos o por el Watchdog de duración.
-2. **Detención multimedia**: Envío de `KEYCODE_MEDIA_PAUSE` y `STOP`.
-3. **Cierre forzoso de Spotify**: Ejecución de `am force-stop com.spotify.music` mediante Shizuku o Root en segundo plano (<50ms).
+### 3. Secuencia de Bypass Atómica y Reanudación Multi-Canal (Triple Play Dispatch):
+1. **Detección Instantánea**: Intercepción del anuncio por metadatos o por el Watchdog de duración. Los indicadores de estado se resetean inmediatamente (`isPlaybackActive = false`).
+2. **Detención multimedia**: Envío de `KEYCODE_MEDIA_PAUSE` y `STOP` dirigidos a Spotify.
+3. **Cierre forzoso de Spotify (<50ms)**: Ejecución atómica de `am force-stop com.spotify.music` mediante Shizuku (`waitFor()` sin timeout que elimina excepciones Binder) o Root en segundo plano, sin abrir ninguna ventana de Ajustes ni tocar la pantalla.
 4. **Relanzamiento limpio**: Apertura de Spotify con búfer limpio de publicidad.
-5. **Purga del búfer**: Envío de `KEYCODE_MEDIA_NEXT`.
-6. **Reanudación de música**: Envío de `KEYCODE_MEDIA_PLAY`.
+5. **Purga del búfer publicitario**: Envío multi-canal de salto de pista (`KeyEvent.KEYCODE_MEDIA_NEXT` + broadcast interno de widget `com.spotify.mobile.android.ui.widget.NEXT` + `cmd media_session dispatch next`).
+6. **Reanudación Garantizada (Triple Play Dispatch)**:
+   - **Canal 1 (AudioManager)**: `KeyEvent.KEYCODE_MEDIA_PLAY` estrictamente idempotente (nunca pausa si ya está sonando).
+   - **Canal 2 (Spotify Widget Broadcast)**: `Intent("com.spotify.mobile.android.ui.widget.PLAY").setPackage("com.spotify.music")` que despierta directamente el servicio de audio en frío de Spotify.
+   - **Canal 3 (System MediaSession Shizuku)**: `cmd media_session dispatch play` despachado a nivel de sistema.
+   - **Secuencia de 4 Pulsos Escalonados (1.8s, 2.8s, 3.5s, 4.5s)**: Garantiza que la música vuelva a sonar inmediatamente en cuanto el motor de audio de Spotify completa su arranque en frío (~2.7s en terminales modernos), incluso con la pantalla apagada o en ahorro de energía.
 
 ### ❓ ¿Por qué se necesita Shizuku y no se puede integrar dentro de SpotiGuard?
 

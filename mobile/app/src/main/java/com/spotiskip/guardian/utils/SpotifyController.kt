@@ -13,6 +13,8 @@ import android.view.KeyEvent
 import android.os.Build
 import java.io.File
 import java.util.concurrent.TimeUnit
+import android.content.pm.PackageManager
+import com.spotiskip.guardian.services.SpotiGuardService
 
 object SpotifyController {
     private const val TAG = "SpotifyController"
@@ -158,28 +160,10 @@ object SpotifyController {
         sendMediaKey(context, KeyEvent.KEYCODE_MEDIA_STOP)
     }
 
-    fun sendMediaNext(context: Context) {
-        sendMediaKey(context, KeyEvent.KEYCODE_MEDIA_NEXT)
-    }
-
-    fun sendMediaPlay(context: Context) {
-        sendMediaKey(context, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
-        sendMediaKey(context, KeyEvent.KEYCODE_MEDIA_PLAY)
-    }
-
-    fun tryShizukuForceStop(context: Context): Boolean {
+    fun execShizukuCommand(cmd: Array<String>): Boolean {
         return try {
-            if (!rikka.shizuku.Shizuku.pingBinder()) {
-                Log.d(TAG, "Shizuku no está en ejecución.")
-                return false
-            }
-            if (rikka.shizuku.Shizuku.checkSelfPermission() != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                Log.d(TAG, "Permiso de Shizuku no concedido.")
-                return false
-            }
-
-            val pkg = if (isSpotifyInstalled(context)) SPOTIFY_PACKAGE else SPOTIFY_LITE_PACKAGE
-            val cmd = arrayOf("am", "force-stop", pkg)
+            if (!rikka.shizuku.Shizuku.pingBinder()) return false
+            if (rikka.shizuku.Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) return false
 
             val method = rikka.shizuku.Shizuku::class.java.getDeclaredMethod(
                 "newProcess",
@@ -189,17 +173,61 @@ object SpotifyController {
             )
             method.isAccessible = true
             val process = method.invoke(null, cmd, null, null) as Process
-            val exitCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                if (process.waitFor(2, TimeUnit.SECONDS)) process.exitValue() else -1
-            } else {
-                process.waitFor()
-            }
-            Log.i(TAG, "Spotify cerrado limpiamente mediante Shizuku (exitCode: $exitCode).")
+            val exitCode = process.waitFor()
             exitCode == 0
         } catch (e: Exception) {
-            Log.e(TAG, "Error en tryShizukuForceStop: ${e.message}", e)
+            Log.e(TAG, "Error ejecutando comando Shizuku [${cmd.joinToString(" ")}]: ${e.message}", e)
             false
         }
+    }
+
+    fun sendMediaNext(context: Context) {
+        // 1. Tecla nativa NEXT
+        sendMediaKey(context, KeyEvent.KEYCODE_MEDIA_NEXT)
+
+        // 2. Control interno de Spotify (widget oficial)
+        try {
+            val widgetIntent = Intent("com.spotify.mobile.android.ui.widget.NEXT").apply {
+                setPackage(SPOTIFY_PACKAGE)
+            }
+            context.sendBroadcast(widgetIntent)
+        } catch (e: Exception) {
+            // Ignorar
+        }
+
+        // 3. Dispatch de MediaSession por Shizuku
+        Thread {
+            execShizukuCommand(arrayOf("cmd", "media_session", "dispatch", "next"))
+        }.start()
+    }
+
+    fun sendMediaPlay(context: Context) {
+        // 1. Tecla nativa PLAY (idempotente: nunca pausa si ya está sonando)
+        sendMediaKey(context, KeyEvent.KEYCODE_MEDIA_PLAY)
+
+        // 2. Control interno de Spotify (widget oficial: despierta el motor de audio directamente)
+        try {
+            val widgetIntent = Intent("com.spotify.mobile.android.ui.widget.PLAY").apply {
+                setPackage(SPOTIFY_PACKAGE)
+            }
+            context.sendBroadcast(widgetIntent)
+        } catch (e: Exception) {
+            // Ignorar
+        }
+
+        // 3. Dispatch de MediaSession a nivel de sistema por Shizuku
+        Thread {
+            execShizukuCommand(arrayOf("cmd", "media_session", "dispatch", "play"))
+        }.start()
+    }
+
+    fun tryShizukuForceStop(context: Context): Boolean {
+        val pkg = if (isSpotifyInstalled(context)) SPOTIFY_PACKAGE else SPOTIFY_LITE_PACKAGE
+        val success = execShizukuCommand(arrayOf("am", "force-stop", pkg))
+        if (success) {
+            Log.i(TAG, "Spotify cerrado forzosamente vía Shizuku ($pkg).")
+        }
+        return success
     }
 
     /**
@@ -211,6 +239,7 @@ object SpotifyController {
      */
     fun restartAndResume(context: Context, onComplete: (() -> Unit)? = null) {
         Log.i(TAG, "Iniciando cierre forzoso, reapertura y play de Spotify...")
+        SpotiGuardService.isPlaybackActive = false
         sendMediaStop(context)
 
         val mainHandler = Handler(Looper.getMainLooper())
@@ -247,14 +276,41 @@ object SpotifyController {
         Log.i(TAG, "Relanzando Spotify...")
         relaunchSpotify(context)
 
+        // 1. A los 1200ms enviar NEXT para avanzar sobre el anuncio
         mainHandler.postDelayed({
             Log.i(TAG, "Enviando Media Next a Spotify...")
             sendMediaNext(context)
-            mainHandler.postDelayed({
-                Log.i(TAG, "Enviando Media Play a Spotify...")
-                sendMediaPlay(context)
-                onComplete?.invoke()
-            }, 350)
         }, 1200)
+
+        // 2. A los 1800ms enviar primer PLAY
+        mainHandler.postDelayed({
+            Log.i(TAG, "Enviando Media Play a Spotify (pulso 1)...")
+            sendMediaPlay(context)
+        }, 1800)
+
+        // 3. A los 2800ms enviar segundo PLAY de refuerzo si aún no suena
+        mainHandler.postDelayed({
+            if (!SpotiGuardService.isPlaybackActive) {
+                Log.i(TAG, "Refuerzo de Media Play a los 2800ms (pulso 2)...")
+                sendMediaPlay(context)
+            }
+        }, 2800)
+
+        // 4. A los 3800ms enviar tercer PLAY si aún no suena
+        mainHandler.postDelayed({
+            if (!SpotiGuardService.isPlaybackActive) {
+                Log.i(TAG, "Refuerzo de Media Play a los 3800ms (pulso 3)...")
+                sendMediaPlay(context)
+            }
+        }, 3800)
+
+        // 5. A los 4800ms reintento final
+        mainHandler.postDelayed({
+            if (!SpotiGuardService.isPlaybackActive) {
+                Log.i(TAG, "Refuerzo final de Media Play a los 4800ms (pulso 4)...")
+                sendMediaPlay(context)
+            }
+            onComplete?.invoke()
+        }, 4800)
     }
 }
