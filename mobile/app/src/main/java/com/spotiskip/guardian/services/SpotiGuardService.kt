@@ -14,6 +14,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -49,6 +50,7 @@ class SpotiGuardService : Service() {
     private var lastStateTimestamp = 0L
 
     private val watchdogHandler = Handler(Looper.getMainLooper())
+    private var wakeLock: PowerManager.WakeLock? = null
     private val watchdogRunnable = Runnable {
         Log.w(TAG, "⏰ WATCHDOG EXPIRADO: Duración de canción agotada sin nuevo tema -> ANUNCIO DETECTADO")
         handleAdDetected("Anuncio publicitario de Spotify")
@@ -285,11 +287,31 @@ class SpotiGuardService : Service() {
         // Margen de seguridad de 350 ms para permitir transición fluida si la siguiente pista no es anuncio
         val delayMs = remainingMs + 350L
         Log.d(TAG, "Watchdog armado para dentro de ${delayMs}ms (Pista restante: ${remainingMs}ms)")
+
+        // WakeLock para garantizar que la CPU nunca se duerma con pantalla apagada / Doze
+        try {
+            if (wakeLock == null) {
+                val pm = getSystemService(Context.POWER_SERVICE) as? PowerManager
+                wakeLock = pm?.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "SpotiGuard::WatchdogWakeLock")
+                wakeLock?.setReferenceCounted(false)
+            }
+            wakeLock?.acquire(delayMs + 4000L)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error adquiriendo WakeLock: ${e.message}")
+        }
+
         watchdogHandler.postDelayed(watchdogRunnable, delayMs)
     }
 
     private fun cancelWatchdog() {
         watchdogHandler.removeCallbacks(watchdogRunnable)
+        try {
+            if (wakeLock?.isHeld == true) {
+                wakeLock?.release()
+            }
+        } catch (e: Exception) {
+            // Ignore
+        }
     }
 
     private fun handleAdDetected(label: String) {

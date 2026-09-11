@@ -15,13 +15,13 @@ El sistema se ejecuta en segundo plano y **se activa de forma 100% autónoma en 
 
 ### 📥 Descargas Directas Listas para Usar
 
-* 📱 **Móvil (Android)**: **[`SpotiGuard-1.0.8-19.apk`](SpotiGuard-1.0.8-19.apk)** *(4.53 MB — Cierre forzoso silencioso a nivel de sistema idéntico a PC, cero ventanas de Ajustes, Shizuku & Root, sin mutear)*
+* 📱 **Móvil (Android)**: **[`SpotiGuard-1.0.8-20.apk`](SpotiGuard-1.0.8-20.apk)** *(4.53 MB — Cierre forzoso silencioso a nivel de sistema idéntico a PC, cero ventanas de Ajustes, Shizuku & Root, sin mutear)*
 * 🖥️ **PC (Windows)**: **[`SpotiGuard-Windows-1.0.0-4.zip`](SpotiGuard-Windows-1.0.0-4.zip)** *(47.9 MB — Paquete portable con ejecutable de 64 bits y reanudación Windows SMTC)*
 * 🚀 **Lanzador Conjunto en PC (1 Clic)**: **[`Spotify (Protegido con SpotiGuard).lnk`](Spotify%20(Protegido%20con%20SpotiGuard).lnk)** *(Abre Spotify y SpotiGuard juntos de forma simultánea)*
 * 🔌 **Instalador Rápido por ADB para Android desde PC**: **[`instalar_android.bat`](instalar_android.bat)** *(Instalación en 1 clic de SpotiGuard y Shizuku en tu móvil vía USB)*
 * ⚡ **Activador Shizuku en 1 Clic**: **[`activar_shizuku.bat`](activar_shizuku.bat)** *(Arranca el servicio de cierre silencioso en tu móvil en 2 segundos)*
 * 🌐 **Repositorio Oficial en GitHub**: **[https://github.com/Atm0027/SpotiGuard](https://github.com/Atm0027/SpotiGuard)**
-* 🚀 **Última Release Oficial (v1.0.8-19)**: **[https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.8-19](https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.8-19)**
+* 🚀 **Última Release Oficial (v1.0.8-20)**: **[https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.8-20](https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.8-20)**
 
 ---
 
@@ -80,20 +80,20 @@ Ubicada en la carpeta [`pc/`](pc/).
 
 Ubicada en la carpeta [`mobile/`](mobile/). Proyecto nativo completo en **Kotlin**.
 
-### Novedades v1.0.8-19:
+### Novedades v1.0.8-20:
+* **Independencia Total de PC (100% Inalámbrico en tu Móvil)**:
+  - Soporte completo para activación autónoma mediante **Depuración inalámbrica** de Android sin requerir PC ni cables USB.
+  - Script para PC actualizado con desacoplamiento `nohup` para que al desenchufar el cable USB el servicio no se detenga.
+* **Protección con Pantalla Apagada (*WakeLock Anti-Doze*)**:
+  - Incorporado `PowerManager.PARTIAL_WAKE_LOCK` temporizado para que la CPU se despierte al segundo exacto de terminar la pista, evitando que el procesador se duerma en el bolsillo o con la pantalla bloqueada.
 * **Reapertura Silenciosa 100% en Segundo Plano (Zero UI / Cero Interrupciones)**:
   - Al neutralizar un anuncio, Spotify se reactiva **completamente en segundo plano** mediante broadcasts dirigidos a `MediaButtonReceiver` y Shizuku.
-  - **Cero ventanas emergentes**: No interrumpe tus juegos en pantalla (Brawl Stars, etc.), ni tus chats ni la navegación web. La música vuelve a sonar sin que la pantalla cambie en absoluto.
+  - **Cero ventanas emergentes**: No interrumpe tus juegos en pantalla (Brawl Stars, etc.), ni chats ni navegación.
 * **Reanudación Multi-Canal (Triple Play Dispatch & Widget Broadcast)**:
-  - **Triple canal de reproducción**: Envío coordinado de `KeyEvent.KEYCODE_MEDIA_PLAY` (idempotente), broadcast oficial de widget de Spotify (`com.spotify.mobile.android.ui.widget.PLAY`) y despacho por consola del sistema (`cmd media_session dispatch play`).
-  - **4 Pulsos Escalonados de Despertar (1.8s, 2.8s, 3.8s, 4.8s)**: Garantiza que la música vuelva a sonar en cuanto el motor de audio en frío de Spotify termina de inicializarse.
-* **Cierre Forzoso Silencioso Corregido (Shizuku & Root)**:
-  - Corregido el manejo de terminación de proceso remoto (`ShizukuRemoteProcess.waitFor()`) eliminando excepciones de Binder para un cierre atómico en <50ms.
-* **Aislamiento Total de Privacidad (Cero Accesibilidad)**:
-  - Servicio de accesibilidad y permisos invasivos eliminados 100% de la app. SpotiGuard solo interactúa con el paquete `com.spotify.music`.
+  - Envío coordinado de `KeyEvent.KEYCODE_MEDIA_PLAY`, broadcast de widget (`ui.widget.PLAY`) y comando de sistema (`cmd media_session dispatch play`).
 
 ### 📲 Descarga e Instalación del APK Oficial:
-* **Descarga directa**: **[`SpotiGuard-1.0.8-19.apk`](SpotiGuard-1.0.8-19.apk)** *(4.53 MB)*.
+* **Descarga directa**: **[`SpotiGuard-1.0.8-20.apk`](SpotiGuard-1.0.8-20.apk)** *(4.53 MB)*.
 * **Firma Oficial**: Almacén de claves RSA 2048-bit (`CN=SpotiGuard`) con esquemas **v2** y **v3**.
 
 ---
@@ -104,10 +104,10 @@ Ubicada en la carpeta [`mobile/`](mobile/). Proyecto nativo completo en **Kotlin
 | :--- | :--- | :--- | :--- |
 | **`versionName`** | SemVer `X.Y.Z` | `1.0.8` | Nombre semántico deducido automáticamente de Conventional Commits. |
 | **`versionCode`** | Entero creciente | `18` | Recuento estricto de commits (`git rev-list --count HEAD`). Nunca retrocede. |
-| **Etiqueta Git (Tag)** | `v<versionName>-<versionCode>` | `v1.0.8-19` | El estado vive en las etiquetas de git. |
+| **Etiqueta Git (Tag)** | `v<versionName>-<versionCode>` | `v1.0.8-20` | El estado vive en las etiquetas de git. |
 | **Título de Release** | `<App> <versionName> (<versionCode>)` | `SpotiGuard 1.0.8 (18)` | Título estandarizado para publicaciones de GitHub. |
 | **Paquete Windows** | `<App>-Windows-<versionName>-<versionCode>.zip` | `SpotiGuard-Windows-1.0.0-4.zip` | Binario portable empaquetado para PC. |
-| **Paquete Android** | `<App>-<versionName>-<versionCode>.apk` | `SpotiGuard-1.0.8-19.apk` | Paquete APK firmado para móviles. |
+| **Paquete Android** | `<App>-<versionName>-<versionCode>.apk` | `SpotiGuard-1.0.8-20.apk` | Paquete APK firmado para móviles. |
 
 ---
 
@@ -116,7 +116,7 @@ Ubicada en la carpeta [`mobile/`](mobile/). Proyecto nativo completo en **Kotlin
 ```text
 Ads Spotify/
 ├── Spotify (Protegido con SpotiGuard).lnk # Acceso directo conjunto para abrir Spotify + SpotiGuard
-├── SpotiGuard-1.0.8-19.apk        # Paquete APK oficial firmado para Android (4.53 MB)
+├── SpotiGuard-1.0.8-20.apk        # Paquete APK oficial firmado para Android (4.53 MB)
 ├── shizuku.apk                    # APK oficial de Shizuku para cierre silencioso (v13.6.0)
 ├── activar_shizuku.bat            # Activador en 1 clic de Shizuku vía ADB
 ├── SpotiGuard-Windows-1.0.0-4.zip # Paquete ZIP portable para Windows (47.9 MB)

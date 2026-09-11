@@ -234,13 +234,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun showShizukuInfoDialog() {
         val builder = androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("🔌 Cierre Silencioso Instantáneo")
+            .setTitle("⚡ Cierre Silencioso 100% Sin PC")
             .setMessage(
-                "Para forzar el cierre de Spotify en segundo plano sin que se abra ninguna pantalla de Ajustes, SpotiGuard usa Shizuku.\n\n" +
-                "1. Conecta tu móvil al ordenador con el cable USB.\n" +
-                "2. En la carpeta de SpotiGuard en tu PC, haz doble clic en 'activar_shizuku.bat'.\n" +
-                "3. En 2 segundos quedará activado y listo para cerrar anuncios como en PC.\n\n" +
-                "(O bien, inicia Shizuku con Depuración inalámbrica si no tienes PC a mano)."
+                "Para saltar anuncios en cualquier lugar sin depender de un ordenador ni cables, Shizuku se activa por Wi-Fi directamente en tu móvil:\n\n" +
+                "1. Ve a Ajustes del móvil ⚙️ -> Opciones de desarrollador.\n" +
+                "2. Activa 'Depuración inalámbrica' (conectado a Wi-Fi).\n" +
+                "3. Abre Shizuku, pulsa 'Emparejamiento' e introduce el código numérico.\n" +
+                "4. En Shizuku, pulsa 'Iniciar'.\n\n" +
+                "¡Y listo! Quedará activo de forma continua y permanente en tu teléfono sin cables."
             )
             .setPositiveButton("Entendido", null)
 

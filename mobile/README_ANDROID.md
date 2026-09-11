@@ -6,12 +6,12 @@ Aplicación nativa de Android que detecta en tiempo real los anuncios de Spotify
 
 ---
 
-## 📱 ¿Cómo Funciona en el Móvil? (Arquitectura v1.0.8-19)
+## 📱 ¿Cómo Funciona en el Móvil? (Arquitectura v1.0.8-20)
 
 ### 1. Cierre Forzoso Real a Nivel de Kernel (Sin Pantallas de Ajustes):
 * En Android moderno (Android 14, 15 y 16), las apps convencionales de terceros no pueden detener procesos ajenos con `killBackgroundProcesses`.
 * Intentar abrir los Ajustes del sistema ("Información de la aplicación") para pulsar "Forzar detención" fue completamente descartado: interrumpe al usuario (por ejemplo, mientras juega o usa otra app), es inestable y no funciona con pantalla apagada.
-* **Solución de Grado de Sistema v1.0.8-19**:
+* **Solución de Grado de Sistema v1.0.8-20**:
   - **Integración con Shizuku API (`dev.rikka.shizuku:api:13.1.5`)**: SpotiGuard se comunica directamente con el daemon de Shizuku para ejecutar la orden nativa de Android `am force-stop com.spotify.music` con permisos ADB (UID 2000).
   - **Cierre Instantáneo en 0.05s**: Spotify es cerrado a nivel de proceso en milisegundos en segundo plano, sin abrir absolutamente ninguna ventana ni diálogo en pantalla.
   - **Soporte Root Directo**: En terminales con Magisk / KernelSU / APatch, ejecuta `su am force-stop com.spotify.music` inmediatamente sin requerir Shizuku.
@@ -60,7 +60,7 @@ Aplicación nativa de Android que detecta en tiempo real los anuncios de Spotify
 
 ## 📲 Descarga e Instalación del APK Oficial
 
-- **Descarga Directa de SpotiGuard**: **[`SpotiGuard-1.0.8-19.apk`](../SpotiGuard-1.0.8-19.apk)** *(4.53 MB — Release v1.0.8-19)*
+- **Descarga Directa de SpotiGuard**: **[`SpotiGuard-1.0.8-20.apk`](../SpotiGuard-1.0.8-20.apk)** *(4.53 MB — Release v1.0.8-20)*
 - **Descarga de Shizuku Oficial**: **[`shizuku.apk`](../shizuku.apk)** *(Oficial v13.6.0)*
 - **Firma Oficial de Producción**: Firmado con Keystore Release propio con esquemas **v2 y v3** activos para compatibilidad total con Android 8.0 hasta Android 16.
 
@@ -73,7 +73,7 @@ Aplicación nativa de Android que detecta en tiempo real los anuncios de Spotify
 2. Haz doble clic en el archivo **`instalar_android.bat`** en la carpeta del proyecto.
 3. El script automáticamente:
    - Detectará tu dispositivo.
-   - Instalará **SpotiGuard** (`SpotiGuard-1.0.8-19.apk`).
+   - Instalará **SpotiGuard** (`SpotiGuard-1.0.8-20.apk`).
    - Instalará **Shizuku** (`shizuku.apk`) si no la tienes.
    - Iniciará el servicio de Shizuku en tu móvil mediante ADB.
 4. Abre **SpotiGuard** en tu móvil y pulsa el botón **"Conceder Permiso Shizuku"** (o "Autorizar" en el diálogo emergente).
@@ -84,10 +84,15 @@ Aplicación nativa de Android que detecta en tiempo real los anuncios de Spotify
 2. Haz doble clic en **`activar_shizuku.bat`**.
 3. El servicio Shizuku quedará activo al instante.
 
-### Opción 3: Activación Inalámbrica de Shizuku (Sin PC)
-1. Conéctate a una red Wi-Fi en tu móvil.
-2. Abre la app **Shizuku** y pulsa en *"Iniciar mediante depuración inalámbrica"*.
-3. Sigue los pasos de emparejamiento con el código de 6 dígitos que proporciona Android.
+### Opción 3: Activación 100% Inalámbrica en el Móvil (Sin Ningún PC — Recomendada para la calle)
+Esta es la opción para usar SpotiGuard sin depender de ningún ordenador ni cable:
+1. Conéctate a tu red Wi-Fi en tu teléfono.
+2. Ve a **Ajustes ⚙️ -> Opciones de desarrollador**.
+3. Activa el interruptor **Depuración inalámbrica**.
+4. Pulsa sobre el texto *"Depuración inalámbrica"* y entra en **"Vincular dispositivo con código de vinculación"**.
+5. Abre la notificación emergente de **Shizuku** (o pon la pantalla dividida) e introduce el código de 6 dígitos.
+6. En la app **Shizuku**, pulsa en **"Iniciar"**.
+¡Listo! Shizuku se ejecutará de forma totalmente autónoma en tu teléfono: puedes desconectarte de la Wi-Fi, salir a la calle con datos móviles o apagar el PC, que el servicio se mantendrá activo hasta que reinicies el teléfono.
 
 ---
 

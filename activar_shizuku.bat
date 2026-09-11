@@ -55,7 +55,7 @@ if %errorlevel% neq 0 (
 
 echo.
 echo [3/3] Iniciando el servicio Shizuku en segundo plano (sin tocar la pantalla)...
-"%ADB_PATH%" shell "PKG_DIR=$(pm path moe.shizuku.privileged.api | head -n 1 | cut -d: -f2 | sed 's/base.apk//'); if [ -n "$PKG_DIR" ]; then ${PKG_DIR}lib/arm64/libshizuku.so 2>/dev/null || ${PKG_DIR}lib/arm/libshizuku.so 2>/dev/null || sh /sdcard/Android/data/moe.shizuku.privileged.api/start.sh 2>/dev/null; fi" 
+"%ADB_PATH%" shell "sh /sdcard/Android/data/moe.shizuku.privileged.api/start.sh 2>/dev/null || (PKG_DIR=$(pm path moe.shizuku.privileged.api | head -n 1 | cut -d: -f2 | sed 's/base.apk//'); nohup ${PKG_DIR}lib/arm64/libshizuku.so >/dev/null 2>&1 &)" 
 
 echo.
 echo ========================================================
