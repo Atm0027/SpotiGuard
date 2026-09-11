@@ -1,6 +1,7 @@
 package com.spotiskip.guardian.utils
 
 import android.app.ActivityManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
@@ -59,7 +60,75 @@ object SpotifyController {
         return getSpotifyLaunchIntent(context) != null
     }
 
-    fun relaunchSpotify(context: Context): Boolean {
+    /**
+     * Despierta Spotify 100% EN SEGUNDO PLANO sin abrir ninguna ventana gráfica ni interrumpir
+     * la aplicación activa del usuario (juegos como Brawl Stars, navegación, redes o chat).
+     */
+    fun wakeSpotifyInBackground(context: Context): Boolean {
+        val pkg = if (isSpotifyInstalled(context)) SPOTIFY_PACKAGE else SPOTIFY_LITE_PACKAGE
+        var success = false
+
+        // 1. Broadcast directo a MediaButtonReceiver de Spotify
+        try {
+            val receiverClass = "$pkg.mediasession.mediasession.receiver.MediaButtonReceiver"
+            val mbIntent = Intent(Intent.ACTION_MEDIA_BUTTON).apply {
+                component = ComponentName(pkg, receiverClass)
+                putExtra(Intent.EXTRA_KEY_EVENT, KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY))
+            }
+            context.sendBroadcast(mbIntent)
+
+            val widgetIntent = Intent("com.spotify.mobile.android.ui.widget.PLAY").apply {
+                setPackage(pkg)
+            }
+            context.sendBroadcast(widgetIntent)
+            success = true
+            Log.i(TAG, "Broadcast de despertar en segundo plano enviado a $pkg.")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error enviando broadcast de inicio en segundo plano: ${e.message}")
+        }
+
+        // 2. Broadcast privilegiado a nivel de sistema por Shizuku Shell (sin ventana gráfica)
+        Thread {
+            try {
+                execShizukuCommand(arrayOf(
+                    "am", "broadcast",
+                    "-a", "android.intent.action.MEDIA_BUTTON",
+                    "-n", "$pkg/com.spotify.mediasession.mediasession.receiver.MediaButtonReceiver"
+                ))
+                execShizukuCommand(arrayOf(
+                    "am", "broadcast",
+                    "-a", "com.spotify.mobile.android.ui.widget.PLAY",
+                    "-p", pkg
+                ))
+            } catch (e: Exception) {
+                // Ignore
+            }
+        }.start()
+
+        return success
+    }
+
+    /**
+     * Abre Spotify en primer plano (usado únicamente cuando el usuario pulsa deliberadamente "Abrir Spotify").
+     */
+    fun openSpotifyForeground(context: Context): Boolean {
+        val pkg = if (isSpotifyInstalled(context)) SPOTIFY_PACKAGE else SPOTIFY_LITE_PACKAGE
+
+        // 1. Lanzamiento privilegiado vía Shizuku Shell (inmune a restricciones BAL de Android)
+        try {
+            if (execShizukuCommand(arrayOf(
+                "am", "start",
+                "-a", "android.intent.action.MAIN",
+                "-c", "android.intent.category.LAUNCHER",
+                "-n", "$pkg/.MainActivity"
+            ))) {
+                return true
+            }
+        } catch (e: Exception) {
+            // fallback
+        }
+
+        // 2. Fallback estándar
         return try {
             val intent = getSpotifyLaunchIntent(context)
             if (intent != null) {
@@ -69,10 +138,12 @@ object SpotifyController {
                 false
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error abriendo Spotify: ${e.message}", e)
+            Log.e(TAG, "Error abriendo Spotify en primer plano: ${e.message}", e)
             false
         }
     }
+
+    fun relaunchSpotify(context: Context): Boolean = openSpotifyForeground(context)
 
     fun openSpotifyAppDetails(context: Context) {
         try {
@@ -273,8 +344,8 @@ object SpotifyController {
     private fun relaunchAndResumePlayback(context: Context, onComplete: (() -> Unit)? = null) {
         val mainHandler = Handler(Looper.getMainLooper())
 
-        Log.i(TAG, "Relanzando Spotify...")
-        relaunchSpotify(context)
+        Log.i(TAG, "Despertando Spotify 100% en segundo plano (sin abrir ventanas)...")
+        wakeSpotifyInBackground(context)
 
         // 1. A los 1200ms enviar NEXT para avanzar sobre el anuncio
         mainHandler.postDelayed({
@@ -288,28 +359,22 @@ object SpotifyController {
             sendMediaPlay(context)
         }, 1800)
 
-        // 3. A los 2800ms enviar segundo PLAY de refuerzo si aún no suena
+        // 3. A los 2800ms enviar segundo PLAY de refuerzo
         mainHandler.postDelayed({
-            if (!SpotiGuardService.isPlaybackActive) {
-                Log.i(TAG, "Refuerzo de Media Play a los 2800ms (pulso 2)...")
-                sendMediaPlay(context)
-            }
+            Log.i(TAG, "Refuerzo de Media Play a los 2800ms (pulso 2)...")
+            sendMediaPlay(context)
         }, 2800)
 
-        // 4. A los 3800ms enviar tercer PLAY si aún no suena
+        // 4. A los 3800ms enviar tercer PLAY
         mainHandler.postDelayed({
-            if (!SpotiGuardService.isPlaybackActive) {
-                Log.i(TAG, "Refuerzo de Media Play a los 3800ms (pulso 3)...")
-                sendMediaPlay(context)
-            }
+            Log.i(TAG, "Refuerzo de Media Play a los 3800ms (pulso 3)...")
+            sendMediaPlay(context)
         }, 3800)
 
         // 5. A los 4800ms reintento final
         mainHandler.postDelayed({
-            if (!SpotiGuardService.isPlaybackActive) {
-                Log.i(TAG, "Refuerzo final de Media Play a los 4800ms (pulso 4)...")
-                sendMediaPlay(context)
-            }
+            Log.i(TAG, "Refuerzo final de Media Play a los 4800ms (pulso 4)...")
+            sendMediaPlay(context)
             onComplete?.invoke()
         }, 4800)
     }
