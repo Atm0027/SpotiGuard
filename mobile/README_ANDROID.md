@@ -126,18 +126,18 @@ Esta es la opción para usar SpotiGuard sin depender de ningún ordenador ni cab
 
 Si requieres mantener el **Bloqueador Automático de Samsung** encendido de forma ininterrumpida y no puedes usar Shizuku/ADB:
 
-1. **Spotube (Recomendada — Conexión con tu cuenta de Spotify sin anuncios)**:
-   - Cliente Open Source nativo para Android ([GitHub Oficial](https://github.com/KRTirtho/spotube)).
-   - **Descarga Local Incluida**: **[`Spotube-android-all-arch.apk`](../Spotube-android-all-arch.apk)** *(122 MB — Versión v5.1.2 Oficial)*.
-   - **Instalador en 1 Clic**: **[`instalar_spotube.bat`](../instalar_spotube.bat)** *(Instalación desatendida vía ADB)*.
-   - Inicias sesión con tu cuenta oficial de Spotify: sincroniza tus playlists, biblioteca y recomendaciones.
-   - Reproduce el stream en alta calidad vía YouTube Music / Piped con **0 anuncios de audio y vídeo** y reproducción en segundo plano.
-   - No requiere Shizuku, ni Root, ni permisos de accesibilidad, y es 100% compatible con el Bloqueador Automático de Samsung.
-   - *Nota de Configuración (Error 401)*: Si Spotube muestra `DioException 401`, ve a *Configuración ⚙️ -> Plugins* y selecciona **MusicBrainz** como *"Fuente de metadatos predeterminada"* para cargar música sin bloqueos de API de Spotify.
+1. **Metrolist (Recomendada y Verificada — Todo el catálogo libre sin errores 401)**:
+   - Cliente Open Source nativo para Android ([GitHub Oficial](https://github.com/MetrolistGroup/Metrolist)).
+   - **Descarga Local Incluida**: **[`Metrolist.apk`](../Metrolist.apk)** *(25.6 MB — Versión v13.7.0 Oficial)*.
+   - **Instalador en 1 Clic**: **[`instalar_metrolist.bat`](../instalar_metrolist.bat)** *(Instalación desatendida vía ADB)*.
+   - **Cero errores 401**: No depende de las APIs bloqueadas de Spotify ni requiere inicios de sesión obligatorios.
+   - **Importación de Playlists de Spotify**: Puedes pegar cualquier enlace de playlist de Spotify para importarla y escucharla de inmediato.
+   - **Cero publicidad**, letras sincronizadas, descargas en memoria para la calle y reproducción en segundo plano.
+   - 100% compatible con el Bloqueador Automático de Samsung Knox.
 
-2. **RiMusic / ViMusic (Catálogo completo de música libre)**:
-   - Apps nativas Open Source con el catálogo de YouTube Music.
-   - Cero publicidad, letras sincronizadas, descarga offline de música y posibilidad de importar listas de Spotify.
+2. **Spotube (Estado: Inestable en v5.1.2)**:
+   - Cliente Open Source ([GitHub](https://github.com/KRTirtho/spotube)).
+   - **Aviso de Diagnóstico**: En las versiones v5+, Spotify bloquea el plugin de metadatos con `DioException 401 (Unauthorized)`, y el motor de YouTube sufre fallos de reproducción por cambios en las firmas de YouTube y bloqueos de `START_FOREGROUND` en Android 14. Se incluye instalador y APK como respaldo.
 
 3. **Spotify Premium (Familiar / Compartido)**:
    - La vía oficial más directa mediante suscripciones compartidas (~2,50 €/mes).
