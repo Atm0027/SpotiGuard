@@ -127,10 +127,12 @@ Esta es la opción para usar SpotiGuard sin depender de ningún ordenador ni cab
 Si requieres mantener el **Bloqueador Automático de Samsung** encendido de forma ininterrumpida y no puedes usar Shizuku/ADB:
 
 1. **Spotube (Recomendada — Conexión con tu cuenta de Spotify sin anuncios)**:
-   - Cliente Open Source nativo para Android ([GitHub](https://github.com/KRTirtho/spotube)).
+   - Cliente Open Source nativo para Android ([GitHub Oficial](https://github.com/KRTirtho/spotube)).
+   - **Descarga Local Incluida**: **[`Spotube-android-all-arch.apk`](../Spotube-android-all-arch.apk)** *(122 MB — Versión v5.1.2 Oficial)*.
+   - **Instalador en 1 Clic**: **[`instalar_spotube.bat`](../instalar_spotube.bat)** *(Instalación desatendida vía ADB)*.
    - Inicias sesión con tu cuenta oficial de Spotify: sincroniza tus playlists, biblioteca y recomendaciones.
    - Reproduce el stream en alta calidad vía YouTube Music / Piped con **0 anuncios de audio y vídeo** y reproducción en segundo plano.
-   - No requiere Shizuku, ni Root, ni permisos de accesibilidad.
+   - No requiere Shizuku, ni Root, ni permisos de accesibilidad, y es 100% compatible con el Bloqueador Automático de Samsung.
 
 2. **RiMusic / ViMusic (Catálogo completo de música libre)**:
    - Apps nativas Open Source con el catálogo de YouTube Music.

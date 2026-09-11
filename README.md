@@ -16,9 +16,11 @@ El sistema se ejecuta en segundo plano y **se activa de forma 100% autónoma en 
 ### 📥 Descargas Directas Listas para Usar
 
 * 📱 **Móvil (Android)**: **[`SpotiGuard-1.0.8-20.apk`](SpotiGuard-1.0.8-20.apk)** *(4.53 MB — Cierre forzoso silencioso a nivel de sistema idéntico a PC, cero ventanas de Ajustes, Shizuku & Root, sin mutear)*
+* 🎧 **Cliente Alternativo (Spotube)**: **[`Spotube-android-all-arch.apk`](Spotube-android-all-arch.apk)** *(122 MB — Cliente Open Source oficial v5.1.2: Cero anuncios, tu cuenta de Spotify, 100% compatible con Bloqueador Samsung)*
 * 🖥️ **PC (Windows)**: **[`SpotiGuard-Windows-1.0.0-4.zip`](SpotiGuard-Windows-1.0.0-4.zip)** *(47.9 MB — Paquete portable con ejecutable de 64 bits y reanudación Windows SMTC)*
 * 🚀 **Lanzador Conjunto en PC (1 Clic)**: **[`Spotify (Protegido con SpotiGuard).lnk`](Spotify%20(Protegido%20con%20SpotiGuard).lnk)** *(Abre Spotify y SpotiGuard juntos de forma simultánea)*
 * 🔌 **Instalador Rápido por ADB para Android desde PC**: **[`instalar_android.bat`](instalar_android.bat)** *(Instalación en 1 clic de SpotiGuard y Shizuku en tu móvil vía USB)*
+* 📦 **Instalador Rápido de Spotube por ADB**: **[`instalar_spotube.bat`](instalar_spotube.bat)** *(Instalación en 1 clic de Spotube en tu móvil vía USB)*
 * ⚡ **Activador Shizuku en 1 Clic**: **[`activar_shizuku.bat`](activar_shizuku.bat)** *(Arranca el servicio de cierre silencioso en tu móvil en 2 segundos)*
 * 🌐 **Repositorio Oficial en GitHub**: **[https://github.com/Atm0027/SpotiGuard](https://github.com/Atm0027/SpotiGuard)**
 * 🚀 **Última Release Oficial (v1.0.8-20)**: **[https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.8-20](https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.8-20)**
@@ -117,11 +119,13 @@ Ubicada en la carpeta [`mobile/`](mobile/). Proyecto nativo completo en **Kotlin
 Ads Spotify/
 ├── Spotify (Protegido con SpotiGuard).lnk # Acceso directo conjunto para abrir Spotify + SpotiGuard
 ├── SpotiGuard-1.0.8-20.apk        # Paquete APK oficial firmado para Android (4.53 MB)
+├── Spotube-android-all-arch.apk   # Paquete APK oficial de Spotube v5.1.2 (122 MB)
 ├── shizuku.apk                    # APK oficial de Shizuku para cierre silencioso (v13.6.0)
 ├── activar_shizuku.bat            # Activador en 1 clic de Shizuku vía ADB
 ├── SpotiGuard-Windows-1.0.0-4.zip # Paquete ZIP portable para Windows (47.9 MB)
 ├── Lanzar Spotify Protegido.bat   # Script para lanzar Spotify y SpotiGuard en PC
 ├── instalar_android.bat           # Instalador automático en 1 clic para móvil vía ADB
+├── instalar_spotube.bat           # Instalador automático en 1 clic de Spotube vía ADB
 ├── README.md                      # Documentación centralizada del proyecto
 ├── pc/                            # Código fuente y componentes de PC
 │   ├── app.py                     # Controlador principal con Mutex e inicio con Windows
