@@ -23,6 +23,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:allowBackup="true"
@@ -34,6 +35,7 @@
 
         <activity
             android:name=".MainActivity"
+            android:excludeFromRecents="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -44,12 +46,14 @@
         <!-- Servicio de Monitorización Segura en Primer Plano -->
         <service
             android:name=".services.SpotiGuardService"
+            android:stopWithTask="false"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
 
         <!-- Servicio de Accesibilidad para Cierre Forzoso y Reinicio Automático de Spotify -->
         <service
             android:name=".services.SpotiGuardAccessibilityService"
+            android:stopWithTask="false"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
             android:exported="true">
             <intent-filter>

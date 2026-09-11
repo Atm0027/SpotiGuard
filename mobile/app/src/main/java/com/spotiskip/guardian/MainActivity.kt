@@ -168,7 +168,7 @@ class MainActivity : AppCompatActivity() {
         btnAccessibilityService.setOnClickListener {
             Toast.makeText(
                 this,
-                "Busca 'SpotiGuard' o 'SpotiGuard Monitor' y actívalo para cerrar Spotify automáticamente",
+                "En Ajustes -> Accesibilidad -> Aplicaciones instaladas:\nDesactiva y vuelve a activar SpotiGuard",
                 Toast.LENGTH_LONG
             ).show()
             try {
@@ -200,25 +200,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isAccessibilityServiceEnabled(context: Context): Boolean {
-        if (SpotiGuardAccessibilityService.isServiceRunning()) {
-            return true
-        }
-        val expectedServiceName = "${context.packageName}/${SpotiGuardAccessibilityService::class.java.canonicalName}"
-        val enabledServices = Settings.Secure.getString(
-            context.contentResolver,
-            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-        ) ?: return false
-
-        val colonSplitter = TextUtils.SimpleStringSplitter(':')
-        colonSplitter.setString(enabledServices)
-        while (colonSplitter.hasNext()) {
-            val componentName = colonSplitter.next()
-            if (componentName.equals(expectedServiceName, ignoreCase = true) ||
-                componentName.contains(SpotiGuardAccessibilityService::class.java.simpleName, ignoreCase = true)) {
-                return true
-            }
-        }
-        return false
+        // Debe estar la instancia viva conectada para garantizar que puede cerrar los anuncios
+        return SpotiGuardAccessibilityService.isServiceRunning()
     }
 
     private fun updateRequirementsUI() {

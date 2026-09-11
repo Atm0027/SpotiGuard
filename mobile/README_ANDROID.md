@@ -6,13 +6,15 @@ Aplicación nativa de Android que detecta en tiempo real los anuncios de Spotify
 
 ---
 
-## 📱 ¿Cómo Funciona en el Móvil? (Arquitectura v1.0.6-16)
+## 📱 ¿Cómo Funciona en el Móvil? (Arquitectura v1.0.7-17)
 
 ### 1. El Reto de Android 14+ / 15 / 16: Cierre Forzoso Real
 * En versiones modernas de Android, Google revocó a las aplicaciones de terceros la posibilidad de utilizar `killBackgroundProcesses` contra otras apps.
 * Si Spotify no se cierra físicamente, permanece en memoria con el anuncio en búfer. Al volver a abrirla y pulsar play, el anuncio continuaría sonando.
-* **Solución v1.0.6-16**:
-  - **Servicio de Accesibilidad (`SpotiGuardAccessibilityService`)**: Al interceptar un anuncio publicitario, SpotiGuard abre la ventana de información de Spotify en Ajustes y pulsa automáticamente en milisegundos **"Forzar detención"** o **"Forzar cierre"** (compatible con Samsung One UI, Xiaomi HyperOS/MIUI, Pixel, etc.) y confirma el diálogo del sistema.
+* **Solución v1.0.7-17**:
+  - **Servicio de Accesibilidad (`SpotiGuardAccessibilityService`)**: Al interceptar un anuncio publicitario, SpotiGuard abre la ventana de información de Spotify en Ajustes y pulsa automáticamente en milisegundos **"Forzar detención"** o **"Forzar cierre"** (compatible con Samsung One UI, Xiaomi HyperOS/MIUI, Pixel, etc.) y confirma el diálogo del sistema (`android:id/button1`).
+  - **Cierre Inmediato de Pantalla (`GLOBAL_ACTION_BACK`)**: Tras confirmar el forzado, el servicio ejecuta inmediatamente un botón Atrás del sistema para no dejar nunca la pantalla de Ajustes visible al usuario.
+  - **Despertar Automático (`WakeLock`)**: Si el anuncio entra con el teléfono bloqueado o pantalla apagada, la despierta brevemente para permitir la interacción UI sin bloqueos.
   - **Cierre directo por Root**: Si el dispositivo dispone de privilegios Root, ejecuta de inmediato `su -c am force-stop com.spotify.music` en segundo plano sin desplegar pantallas.
   - **Relanzamiento Inmediato y Reanudación**: Una vez cerrado el proceso, SpotiGuard relanza Spotify de inmediato mediante Intent del sistema y envía los comandos multimedia `NEXT` y `PLAY` para arrancar la siguiente canción sin anuncios.
 
@@ -24,9 +26,10 @@ Aplicación nativa de Android que detecta en tiempo real los anuncios de Spotify
 1. **Detección Instantánea**: Intercepción del anuncio por metadatos o por el Watchdog de duración.
 2. **Detención multimedia**: Envío de `KEYCODE_MEDIA_PAUSE` y `STOP`.
 3. **Cierre forzoso de Spotify**: A través de `SpotiGuardAccessibilityService` ("Forzar cierre" / "Forzar detención") o comando Root.
-4. **Relanzamiento limpio**: Apertura de Spotify con búfer limpio de publicidad.
-5. **Purga del búfer**: Envío de `KEYCODE_MEDIA_NEXT`.
-6. **Reanudación de música**: Envío de `KEYCODE_MEDIA_PLAY`.
+4. **Cierre de Ajustes**: Salida inmediata con `GLOBAL_ACTION_BACK`.
+5. **Relanzamiento limpio**: Apertura de Spotify con búfer limpio de publicidad.
+6. **Purga del búfer**: Envío de `KEYCODE_MEDIA_NEXT`.
+7. **Reanudación de música**: Envío de `KEYCODE_MEDIA_PLAY`.
 
 ### 4. Detección Dinámica de Requisitos en la App:
 * **Estado de Emisión de Spotify**: En cuanto SpotiGuard detecta el primer evento procedente de Spotify, el botón **1** desaparece de la pantalla.
@@ -38,7 +41,7 @@ Aplicación nativa de Android que detecta en tiempo real los anuncios de Spotify
 
 ## 📲 Descarga e Instalación del APK Oficial
 
-- **Descarga Directa del APK**: **[`SpotiGuard-1.0.6-16.apk`](../SpotiGuard-1.0.6-16.apk)** *(4.74 MB — Release v1.0.6-16)*
+- **Descarga Directa del APK**: **[`SpotiGuard-1.0.7-17.apk`](../SpotiGuard-1.0.7-17.apk)** *(4.74 MB — Release v1.0.7-17)*
 - **Firma Oficial de Producción**: Firmado con Keystore Release propio con esquemas **v2 y v3** activos para máxima compatibilidad desde Android 8.0 hasta Android 16.
 
 ### 🛡️ Opciones de Instalación en Android:

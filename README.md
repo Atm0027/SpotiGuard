@@ -15,12 +15,12 @@ El sistema se ejecuta en segundo plano y **se activa de forma 100% autónoma en 
 
 ### 📥 Descargas Directas Listas para Usar
 
-* 📱 **Móvil (Android)**: **[`SpotiGuard-1.0.6-16.apk`](SpotiGuard-1.0.6-16.apk)** *(4.74 MB — Bypass puro por cierre forzoso y reinicio automático sin mutear, watchdog anti-anuncios silenciosos, compatible con Samsung One UI / Android 16)*
+* 📱 **Móvil (Android)**: **[`SpotiGuard-1.0.7-17.apk`](SpotiGuard-1.0.7-17.apk)** *(4.74 MB — Bypass puro por cierre forzoso y reinicio automático sin mutear, watchdog anti-anuncios silenciosos, compatible con Samsung One UI / Android 16)*
 * 🖥️ **PC (Windows)**: **[`SpotiGuard-Windows-1.0.0-4.zip`](SpotiGuard-Windows-1.0.0-4.zip)** *(47.9 MB — Paquete portable con ejecutable de 64 bits y reanudación Windows SMTC)*
 * 🚀 **Lanzador Conjunto en PC (1 Clic)**: **[`Spotify (Protegido con SpotiGuard).lnk`](Spotify%20(Protegido%20con%20SpotiGuard).lnk)** *(Abre Spotify y SpotiGuard juntos de forma simultánea)*
 * 🔌 **Instalador Rápido por ADB para Android desde PC**: **[`instalar_android.bat`](instalar_android.bat)** *(Instalación en 1 clic en tu móvil vía cable USB o Wi-Fi sin advertencias de navegador)*
 * 🌐 **Repositorio Oficial en GitHub**: **[https://github.com/Atm0027/SpotiGuard](https://github.com/Atm0027/SpotiGuard)**
-* 🚀 **Última Release Oficial (v1.0.6-16)**: **[https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.6-16](https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.6-16)**
+* 🚀 **Última Release Oficial (v1.0.7-17)**: **[https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.7-17](https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.7-17)**
 
 ---
 
@@ -45,7 +45,7 @@ Tanto en **Windows** como en **Android**, SpotiGuard está diseñado para funcio
 
 ### 1. Bypass Puro sin Muteo (Cierre Forzoso y Relanzamiento Limpio):
 * **Cero Silenciamiento**: La app no silencia el audio ni enmascara la publicidad; destruye el proceso de Spotify en el acto para purgar el anuncio del búfer de reproducción.
-* **Servicio de Accesibilidad Rápido (`SpotiGuardAccessibilityService`)**: Pulsa automáticamente "Forzar cierre" / "Forzar detención" y confirma el diálogo del sistema en ~200 ms. Optimizado para Samsung One UI, Xiaomi HyperOS, Google Pixel y Android estándar.
+* **Servicio de Accesibilidad Rápido (`SpotiGuardAccessibilityService`)**: Pulsa automáticamente "Forzar cierre" / "Forzar detención" y confirma el diálogo del sistema en ~150 ms. Optimizado para Samsung One UI, Xiaomi HyperOS, Google Pixel y Android estándar. Cierra inmediatamente la pantalla de Ajustes con botón Atrás del sistema para no dejar ventanas abiertas.
 * **Soporte Root Directo**: En teléfonos con permisos Root, ejecuta `su am force-stop com.spotify.music` instantáneamente sin necesidad de interacción visual.
 
 ### 2. Detección Dual de Anuncios en Android:
@@ -55,9 +55,10 @@ Tanto en **Windows** como en **Android**, SpotiGuard está diseñado para funcio
 ### 3. Secuencia de Neutralización:
 1. **Detención multimedia**: `sendMediaStop()` (`KEYCODE_MEDIA_PAUSE` y `STOP`).
 2. **Cierre forzoso de Spotify**: Mediante `SpotiGuardAccessibilityService` o Root.
-3. **Relanzamiento limpio**: Apertura de Spotify con el búfer publicitario purgado.
-4. **Purga y salto**: `KEYCODE_MEDIA_NEXT` para cargar la siguiente pista legítima.
-5. **Reanudación automática**: `KEYCODE_MEDIA_PLAY` para iniciar la música sin interrupciones.
+3. **Cierre de Ajustes**: Retorno instantáneo (`GLOBAL_ACTION_BACK`) para no dejar abierta la información de Spotify.
+4. **Relanzamiento limpio**: Apertura de Spotify con el búfer publicitario purgado.
+5. **Purga y salto**: `KEYCODE_MEDIA_NEXT` para cargar la siguiente pista legítima.
+6. **Reanudación automática**: `KEYCODE_MEDIA_PLAY` para iniciar la música sin interrupciones.
 
 ---
 
@@ -80,22 +81,20 @@ Ubicada en la carpeta [`pc/`](pc/).
 
 Ubicada en la carpeta [`mobile/`](mobile/). Proyecto nativo completo en **Kotlin**.
 
-### Novedades v1.0.6-16:
-* **Bypass Puro por Cierre Forzoso (Sin Mutear)**:
-  - Eliminado por completo el silenciador de audio (`AudioController`).
-  - Cierre inmediato de la aplicación de Spotify ante cualquier anuncio.
-* **Compatibilidad Universal con Samsung One UI / Android 15 & 16**:
-  - Detección precisa de los botones "Forzar cierre" y confirmación de cuadro de diálogo.
-* **Watchdog de Precisión para Anuncios Silenciosos**:
-  - Soluciona los anuncios de Spotify que no emiten eventos broadcast.
-* **Ocultación Dinámica de Requisitos en la UI**:
-  - Botón de emisión de Spotify desaparece en cuanto Spotify envía el primer evento.
-  - Botón de optimización de batería desaparece en cuanto la app tiene permiso sin restricciones.
-  - Botón de accesibilidad desaparece al estar concedido.
-  - Mensaje verde de éxito cuando todos los requisitos están cumplidos.
+### Novedades v1.0.7-17:
+* **Corrección de Apertura Persistente de Información de la Aplicación**:
+  - Resuelto el problema por el cual la ventana de Ajustes de Spotify se quedaba abierta en la pantalla.
+  - Implementado cierre inmediato mediante acción global Atrás (`GLOBAL_ACTION_BACK`) al confirmar el forzado o en caso de timeout.
+* **Diferenciación Estricta del Diálogo de Confirmación en Samsung One UI**:
+  - Detección prioritaria del botón afirmativo `android:id/button1` del sistema.
+  - Filtrado para ignorar botones de la barra de acciones inferior (`forcestop_button`), eliminando falsos positivos.
+* **Despertar Automático de Pantalla (`WakeLock`)**:
+  - Encendido breve de la pantalla si entra un anuncio con el móvil bloqueado o apagado, permitiendo ejecutar la accesibilidad sin quedar atrapado en la pantalla de bloqueo.
+* **Blindaje contra Limpieza de Tareas Recientes**:
+  - Añadido `stopWithTask="false"` a los servicios y `excludeFromRecents="true"` a `MainActivity` para evitar que deslizar SpotiGuard en Recientes rompa el servicio de accesibilidad.
 
 ### 📲 Descarga e Instalación del APK Oficial:
-* **Descarga directa**: **[`SpotiGuard-1.0.6-16.apk`](SpotiGuard-1.0.6-16.apk)** *(4.74 MB)*.
+* **Descarga directa**: **[`SpotiGuard-1.0.7-17.apk`](SpotiGuard-1.0.7-17.apk)** *(4.74 MB)*.
 * **Firma Oficial**: Almacén de claves RSA 2048-bit (`CN=SpotiGuard`) con esquemas **v2** y **v3**.
 
 ---
@@ -104,12 +103,12 @@ Ubicada en la carpeta [`mobile/`](mobile/). Proyecto nativo completo en **Kotlin
 
 | Componente | Formato | Ejemplo en SpotiGuard | Significado |
 | :--- | :--- | :--- | :--- |
-| **`versionName`** | SemVer `X.Y.Z` | `1.0.6` | Nombre semántico deducido automáticamente de Conventional Commits. |
-| **`versionCode`** | Entero creciente | `16` | Recuento estricto de commits (`git rev-list --count HEAD`). Nunca retrocede. |
-| **Etiqueta Git (Tag)** | `v<versionName>-<versionCode>` | `v1.0.6-16` | El estado vive en las etiquetas de git. |
-| **Título de Release** | `<App> <versionName> (<versionCode>)` | `SpotiGuard 1.0.6 (16)` | Título estandarizado para publicaciones de GitHub. |
+| **`versionName`** | SemVer `X.Y.Z` | `1.0.7` | Nombre semántico deducido automáticamente de Conventional Commits. |
+| **`versionCode`** | Entero creciente | `17` | Recuento estricto de commits (`git rev-list --count HEAD`). Nunca retrocede. |
+| **Etiqueta Git (Tag)** | `v<versionName>-<versionCode>` | `v1.0.7-17` | El estado vive en las etiquetas de git. |
+| **Título de Release** | `<App> <versionName> (<versionCode>)` | `SpotiGuard 1.0.7 (17)` | Título estandarizado para publicaciones de GitHub. |
 | **Paquete Windows** | `<App>-Windows-<versionName>-<versionCode>.zip` | `SpotiGuard-Windows-1.0.0-4.zip` | Binario portable empaquetado para PC. |
-| **Paquete Android** | `<App>-<versionName>-<versionCode>.apk` | `SpotiGuard-1.0.6-16.apk` | Paquete APK firmado para móviles. |
+| **Paquete Android** | `<App>-<versionName>-<versionCode>.apk` | `SpotiGuard-1.0.7-17.apk` | Paquete APK firmado para móviles. |
 
 ---
 
