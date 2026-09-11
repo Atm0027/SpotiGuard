@@ -29,6 +29,23 @@ Aplicación nativa de Android que detecta en tiempo real los anuncios de Spotify
 5. **Purga del búfer**: Envío de `KEYCODE_MEDIA_NEXT`.
 6. **Reanudación de música**: Envío de `KEYCODE_MEDIA_PLAY`.
 
+### ❓ ¿Por qué se necesita Shizuku y no se puede integrar dentro de SpotiGuard?
+
+1. **El Sandbox de Seguridad de Linux / Android (Aislamiento de UID)**:
+   - Toda aplicación que instalas en Android corre dentro de una "cárcel" o sandbox con un usuario Linux propio (por ejemplo `u0_a245`).
+   - Por diseño estricto del kernel de Linux y de SELinux, un usuario normal **jamás puede matar o detener procesos pertenecientes a otro usuario** (como Spotify, que corre bajo `u0_a180`).
+   - Da igual el código que escribamos o las librerías que compilemos dentro de SpotiGuard: cualquier proceso que SpotiGuard inicie por sí mismo heredará su mismo nivel de privilegios restringido (`u0_a245`).
+
+2. **¿De dónde sale el poder de matar procesos sin Root?**:
+   - Proviene del usuario del sistema **`shell` (UID 2000)**, que es el usuario con el que opera el puente **ADB**.
+   - El sistema operativo Android **solo permite ejecutar `am force-stop` a Root (UID 0) o a Shell (UID 2000)**.
+   - Ninguna app de usuario puede auto-concederse UID 2000; ese proceso tiene que ser iniciado **desde fuera de Android** (por cable USB con un PC o mediante la depuración inalámbrica).
+
+3. **Shizuku como "Driver de Sistema" Invisible**:
+   - Shizuku no es una app común: es un servidor puente que se ejecuta con **UID 2000** y permite a SpotiGuard pedirle: *"Por favor, mata el proceso de Spotify ahora mismo"*.
+   - Si intentáramos programar nuestro propio servidor en SpotiGuard, **seguirías teniendo que conectarlo por cable USB al PC para arrancarlo con comandos ADB exactamente igual**, pero con la desventaja de que las políticas de SELinux de Samsung One UI / Xiaomi HyperOS bloquearían un servidor casero.
+   - Con **`instalar_android.bat`**, Shizuku se instala y arranca en 1 segundo de forma totalmente automática y desatendida, actuando como un "driver" en segundo plano que no necesitas volver a abrir.
+
 ### 4. Detección Dinámica de Requisitos en la App:
 * **Estado de Emisión de Spotify**: En cuanto SpotiGuard detecta el primer evento procedente de Spotify, el botón **1** desaparece de la pantalla.
 * **Batería sin Restricciones**: Si SpotiGuard está excluido del ahorro de energía del sistema, el botón **2** desaparece de la pantalla.
