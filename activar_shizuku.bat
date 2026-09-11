@@ -55,8 +55,13 @@ if %errorlevel% neq 0 (
 
 echo.
 echo [3/3] Iniciando el servicio Shizuku a nivel de sistema mediante ADB...
-"%ADB_PATH%" shell sh /sdcard/Android/data/moe.shizuku.privileged.api/start.sh >nul 2>&1
-"%ADB_PATH%" shell sh /storage/emulated/0/Android/data/moe.shizuku.privileged.api/start.sh >nul 2>&1
+rem Despertar Shizuku si acaba de instalarse
+"%ADB_PATH%" shell am start -n moe.shizuku.privileged.api/rikka.shizuku.ui.MainActivity >nul 2>&1
+timeout /t 1 /nobreak >nul
+rem Ejecutar start.sh probando todas las rutas validas en Android 8 a 16
+"%ADB_PATH%" shell "sh /sdcard/Android/data/moe.shizuku.privileged.api/start.sh 2>/dev/null || sh /storage/emulated/0/Android/data/moe.shizuku.privileged.api/start.sh 2>/dev/null || sh /sdcard/Android/data/moe.shizuku.privileged.api/files/start.sh 2>/dev/null || sh /storage/emulated/0/Android/data/moe.shizuku.privileged.api/files/start.sh 2>/dev/null"
+rem Volver a la pantalla principal
+"%ADB_PATH%" shell input keyevent KEYCODE_HOME >nul 2>&1
 
 echo.
 echo ========================================================

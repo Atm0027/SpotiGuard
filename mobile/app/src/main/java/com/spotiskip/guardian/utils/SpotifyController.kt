@@ -10,6 +10,9 @@ import android.os.Looper
 import android.provider.Settings
 import android.util.Log
 import android.view.KeyEvent
+import android.os.Build
+import java.io.File
+import java.util.concurrent.TimeUnit
 import com.spotiskip.guardian.services.SpotiGuardAccessibilityService
 
 object SpotifyController {
@@ -80,6 +83,24 @@ object SpotifyController {
             context.startActivity(intent)
         } catch (e: Exception) {
             Log.e(TAG, "Error abriendo detalles de Spotify: ${e.message}", e)
+        }
+    }
+
+    fun isRootAvailable(): Boolean {
+        return try {
+            val paths = arrayOf(
+                "/system/bin/su",
+                "/system/xbin/su",
+                "/sbin/su",
+                "/system/sd/xbin/su",
+                "/system/bin/failsafe/su",
+                "/data/local/xbin/su",
+                "/data/local/bin/su",
+                "/data/local/su"
+            )
+            paths.any { File(it).exists() }
+        } catch (e: Exception) {
+            false
         }
     }
 
@@ -169,7 +190,11 @@ object SpotifyController {
             )
             method.isAccessible = true
             val process = method.invoke(null, cmd, null, null) as Process
-            val exitCode = process.waitFor()
+            val exitCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                if (process.waitFor(2, TimeUnit.SECONDS)) process.exitValue() else -1
+            } else {
+                process.waitFor()
+            }
             Log.i(TAG, "Spotify cerrado limpiamente mediante Shizuku (exitCode: $exitCode).")
             exitCode == 0
         } catch (e: Exception) {
@@ -191,27 +216,30 @@ object SpotifyController {
 
         val mainHandler = Handler(Looper.getMainLooper())
 
-        // 1. Si hay Root, forzar detención directa por comando (100% silencioso)
-        if (tryRootForceStop()) {
+        // Ejecutar en hilo de fondo para no bloquear el hilo principal
+        Thread {
+            // 1. Si hay Root, forzar detención directa por comando (100% silencioso)
+            if (tryRootForceStop()) {
+                mainHandler.postDelayed({
+                    relaunchAndResumePlayback(context, onComplete)
+                }, 350)
+                return@Thread
+            }
+
+            // 2. Si hay Shizuku activo, forzar detención directa a nivel de sistema (100% silencioso sin pantallas)
+            if (tryShizukuForceStop(context)) {
+                mainHandler.postDelayed({
+                    relaunchAndResumePlayback(context, onComplete)
+                }, 350)
+                return@Thread
+            }
+
+            // 3. Fallback limpio: Relanzar inmediatamente con Next y Play
+            killSpotify(context)
             mainHandler.postDelayed({
                 relaunchAndResumePlayback(context, onComplete)
-            }, 350)
-            return
-        }
-
-        // 2. Si hay Shizuku activo, forzar detención directa a nivel de sistema (100% silencioso sin pantallas)
-        if (tryShizukuForceStop(context)) {
-            mainHandler.postDelayed({
-                relaunchAndResumePlayback(context, onComplete)
-            }, 350)
-            return
-        }
-
-        // 3. Fallback limpio: Relanzar inmediatamente con Next y Play
-        killSpotify(context)
-        mainHandler.postDelayed({
-            relaunchAndResumePlayback(context, onComplete)
-        }, 400)
+            }, 400)
+        }.start()
     }
 
     private fun relaunchAndResumePlayback(context: Context, onComplete: (() -> Unit)? = null) {

@@ -124,7 +124,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         try {
             Shizuku.addRequestPermissionResultListener(shizukuPermissionListener)
-            Shizuku.addBinderReceivedListener(shizukuBinderReceivedListener)
+            Shizuku.addBinderReceivedListenerSticky(shizukuBinderReceivedListener)
             Shizuku.addBinderDeadListener(shizukuBinderDeadListener)
         } catch (e: Exception) {
             // Shizuku no disponible aún
@@ -234,16 +234,25 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showShizukuInfoDialog() {
-        androidx.appcompat.app.AlertDialog.Builder(this)
+        val builder = androidx.appcompat.app.AlertDialog.Builder(this)
             .setTitle("🔌 Cierre Silencioso Instantáneo")
             .setMessage(
                 "Para forzar el cierre de Spotify en segundo plano sin que se abra ninguna pantalla de Ajustes, SpotiGuard usa Shizuku.\n\n" +
                 "1. Conecta tu móvil al ordenador con el cable USB.\n" +
                 "2. En la carpeta de SpotiGuard en tu PC, haz doble clic en 'activar_shizuku.bat'.\n" +
-                "3. En 2 segundos quedará activado y listo para cerrar anuncios como en PC."
+                "3. En 2 segundos quedará activado y listo para cerrar anuncios como en PC.\n\n" +
+                "(O bien, inicia Shizuku con Depuración inalámbrica si no tienes PC a mano)."
             )
             .setPositiveButton("Entendido", null)
-            .show()
+
+        val shizukuLaunchIntent = packageManager.getLaunchIntentForPackage("moe.shizuku.privileged.api")
+        if (shizukuLaunchIntent != null) {
+            builder.setNeutralButton("Abrir App Shizuku") { _, _ ->
+                startActivity(shizukuLaunchIntent)
+            }
+        }
+
+        builder.show()
     }
 
     private fun isBatteryOptimizedIgnored(context: Context): Boolean {
@@ -256,7 +265,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isPrivilegedForceStopReady(): Boolean {
-        if (SpotifyController.tryRootForceStop()) return true
+        if (SpotifyController.isRootAvailable()) return true
         return try {
             Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
         } catch (e: Exception) {
