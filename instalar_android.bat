@@ -45,8 +45,13 @@ if not defined DEVICE_FOUND (
 echo.
 echo [2/3] Buscando el APK mas reciente de SpotiGuard...
 set APK_FILE=
-for /f "delims=" %%F in ('dir /b /s /o:-d "mobile\app\build\outputs\apk\release\SpotiGuard-*.apk" 2^>nul') do (
-    if not defined APK_FILE set APK_FILE=%%F
+for /f "delims=" %%F in ('dir /b /o:-d "%~dp0SpotiGuard-*.apk" 2^>nul') do (
+    if not defined APK_FILE set APK_FILE=%~dp0%%F
+)
+if not defined APK_FILE (
+    for /f "delims=" %%F in ('dir /b /s /o:-d "%~dp0mobile\app\build\outputs\apk\release\SpotiGuard-*.apk" 2^>nul') do (
+        if not defined APK_FILE set APK_FILE=%%F
+    )
 )
 
 if not defined APK_FILE (

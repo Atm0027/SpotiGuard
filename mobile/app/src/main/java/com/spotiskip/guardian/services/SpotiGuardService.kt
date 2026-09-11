@@ -19,7 +19,6 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.spotiskip.guardian.MainActivity
 import com.spotiskip.guardian.R
-import com.spotiskip.guardian.utils.AudioController
 import com.spotiskip.guardian.utils.SpotifyController
 
 /**
@@ -240,9 +239,6 @@ class SpotiGuardService : Service() {
             broadcastUpdate(displayTrack, false)
         }
 
-        // Si el audio estaba silenciado por el salto, restaurarlo para la canción
-        AudioController.unmute(applicationContext)
-
         // Armar el watchdog para vigilar la llegada al final de la pista
         scheduleWatchdog()
     }
@@ -308,8 +304,7 @@ class SpotiGuardService : Service() {
         updateNotification("⚡ Saltando anuncio...", adLabel)
         broadcastUpdate("⚡ Saltando: $adLabel", true)
 
-        Log.w(TAG, "🚨 ANUNCIO INTERCEPTADO ($adLabel). Silenciando audio y reiniciando Spotify...")
-        AudioController.mute(applicationContext)
+        Log.w(TAG, "🚨 ANUNCIO INTERCEPTADO ($adLabel). Ejecutando cierre forzoso y reinicio de Spotify...")
 
         SpotifyController.restartAndResume(applicationContext) {
             Log.i(TAG, "Reinicio y reanudación de Spotify completados.")
@@ -380,7 +375,6 @@ class SpotiGuardService : Service() {
         unregisterSpotifyReceiver()
         isRunning = false
         broadcastServiceState(false)
-        AudioController.unmute(applicationContext)
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }

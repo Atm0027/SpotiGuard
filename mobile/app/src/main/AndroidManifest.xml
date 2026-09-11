@@ -47,7 +47,7 @@
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
 
-        <!-- Servicio de Accesibilidad para Forzar Detención y Reinicio Automático de Spotify -->
+        <!-- Servicio de Accesibilidad para Cierre Forzoso y Reinicio Automático de Spotify -->
         <service
             android:name=".services.SpotiGuardAccessibilityService"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"

@@ -13,15 +13,14 @@ import android.view.accessibility.AccessibilityNodeInfo
 import com.spotiskip.guardian.utils.SpotifyController
 
 /**
- * Servicio de Accesibilidad para SpotiGuard.
- * Automatiza el cierre forzoso (Force Stop) de Spotify en Android 14+ donde
- * killBackgroundProcesses fue revocado por el sistema operativo.
+ * Servicio de Accesibilidad de SpotiGuard para cierre forzoso (Force-Stop).
+ * Totalmente compatible con Samsung One UI, Pixel AOSP, Xiaomi MIUI/HyperOS, etc.
  *
  * Flujo:
- * 1. SpotiGuard solicita forzar detención cuando detecta un anuncio.
- * 2. Se abre instantáneamente la pantalla de Ajustes de Spotify.
- * 3. Este servicio pulsa "Forzar detención" y "Aceptar" en menos de 200ms.
- * 4. Invoca el callback para relanzar Spotify y continuar la música limpia sin anuncios.
+ * 1. Al detectar anuncio, abre Ajustes de Spotify.
+ * 2. Pulsa "Forzar cierre" / "Forzar detención" / "Force stop" en <150ms.
+ * 3. Acepta el diálogo de confirmación ("Forzar cierre" / "Aceptar").
+ * 4. Relanza Spotify de inmediato y pulsa Play.
  */
 class SpotiGuardAccessibilityService : AccessibilityService() {
 
@@ -89,7 +88,7 @@ class SpotiGuardAccessibilityService : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
         instance = this
-        Log.i(TAG, "Servicio de Accesibilidad SpotiGuard CONECTADO")
+        Log.i(TAG, "Servicio de Accesibilidad SpotiGuard CONECTADO y LISTO")
     }
 
     override fun onDestroy() {
@@ -117,28 +116,28 @@ class SpotiGuardAccessibilityService : AccessibilityService() {
 
         try {
             if (!clickedForceStopButton) {
-                // Paso 1: Buscar y pulsar el botón "Forzar detención" / "Force stop"
+                // Paso 1: Buscar y pulsar el botón "Forzar cierre" / "Forzar detención" / "Force stop"
                 val forceStopNode = findForceStopButton(rootNode)
                 if (forceStopNode != null) {
                     if (!forceStopNode.isEnabled) {
-                        Log.i(TAG, "El botón Forzar detención está deshabilitado (Spotify ya estaba detenido).")
+                        Log.i(TAG, "El botón Forzar detención/cierre está deshabilitado (Spotify ya estaba cerrado).")
                         completeKill()
                         return
                     }
 
                     val clicked = performClick(forceStopNode)
                     if (clicked) {
-                        Log.i(TAG, "Botón 'Forzar detención' pulsado con éxito.")
+                        Log.i(TAG, "Botón 'Forzar cierre / detención' pulsado con éxito.")
                         clickedForceStopButton = true
                     }
                 }
             } else {
-                // Paso 2: Buscar y pulsar la confirmación en el diálogo ("Aceptar", "OK", "Forzar detención")
+                // Paso 2: Buscar y pulsar la confirmación en el diálogo ("Forzar cierre", "Aceptar", "OK")
                 val confirmNode = findConfirmDialogButton(rootNode)
                 if (confirmNode != null) {
                     val clicked = performClick(confirmNode)
                     if (clicked) {
-                        Log.i(TAG, "Diálogo de confirmación aceptado. Spotify forzado a cerrar.")
+                        Log.i(TAG, "Diálogo de confirmación aceptado. Spotify liquidado por completo.")
                         completeKill()
                     }
                 }
@@ -158,28 +157,57 @@ class SpotiGuardAccessibilityService : AccessibilityService() {
     }
 
     private fun findForceStopButton(root: AccessibilityNodeInfo): AccessibilityNodeInfo? {
-        val candidateTexts = listOf(
-            "forzar detención", "forzar detencion", "force stop",
-            "detener", "forzar parada", "arrêter", "beenden"
+        // En Samsung One UI es "Forzar cierre"; en AOSP/Pixel "Forzar detención"; en inglés "Force stop"
+        val candidateKeywords = listOf(
+            "forzar cierre", "forzar detención", "forzar detencion", "force stop",
+            "detener", "forzar parada", "cierre forzado", "arrêter", "beenden"
         )
-        for (text in candidateTexts) {
+        for (text in candidateKeywords) {
             val list = root.findAccessibilityNodeInfosByText(text)
             if (!list.isNullOrEmpty()) {
                 for (node in list) {
                     val nText = node.text?.toString()?.lowercase() ?: ""
                     val nDesc = node.contentDescription?.toString()?.lowercase() ?: ""
-                    if (candidateTexts.any { nText.contains(it) || nDesc.contains(it) }) {
+                    if (candidateKeywords.any { nText.contains(it) || nDesc.contains(it) }) {
                         return node
                     }
                 }
             }
         }
 
+        // Búsqueda heurística por subcadenas clave
+        val queue = ArrayDeque<AccessibilityNodeInfo>()
+        queue.add(root)
+        while (!queue.isEmpty()) {
+            val current = queue.removeFirst()
+            val text = current.text?.toString()?.lowercase() ?: ""
+            val desc = current.contentDescription?.toString()?.lowercase() ?: ""
+            if ((text.contains("cierre") || text.contains("deten") || text.contains("stop")) &&
+                !text.contains("desinstalar") && !text.contains("abrir") && !text.contains("cancelar")) {
+                if (current.isClickable || (current.parent?.isClickable == true)) {
+                    return current
+                }
+            }
+            if ((desc.contains("cierre") || desc.contains("deten") || desc.contains("stop")) &&
+                !desc.contains("desinstalar") && !desc.contains("abrir") && !desc.contains("cancelar")) {
+                if (current.isClickable || (current.parent?.isClickable == true)) {
+                    return current
+                }
+            }
+            for (i in 0 until current.childCount) {
+                current.getChild(i)?.let { queue.add(it) }
+            }
+        }
+
+        // IDs comunes de fabricantes (Samsung One UI, Pixel, Xiaomi)
         val candidateIds = listOf(
             "com.android.settings:id/button1_negative",
             "com.android.settings:id/right_button",
             "com.android.settings:id/button1",
-            "com.android.settings:id/force_stop_button"
+            "com.android.settings:id/force_stop_button",
+            "com.samsung.android.settings:id/button1_negative",
+            "com.samsung.android.settings:id/right_button",
+            "com.samsung.android.settings:id/button1"
         )
         for (id in candidateIds) {
             val list = root.findAccessibilityNodeInfosByViewId(id)
@@ -192,14 +220,20 @@ class SpotiGuardAccessibilityService : AccessibilityService() {
     }
 
     private fun findConfirmDialogButton(root: AccessibilityNodeInfo): AccessibilityNodeInfo? {
-        val confirmTexts = listOf("aceptar", "ok", "forzar detención", "forzar detencion", "force stop")
-        for (text in confirmTexts) {
+        // En Samsung One UI el botón de confirmación en el diálogo dice "Forzar cierre"
+        val confirmKeywords = listOf(
+            "forzar cierre", "forzar detención", "forzar detencion",
+            "aceptar", "ok", "force stop", "confirmar", "sí", "si"
+        )
+        for (text in confirmKeywords) {
             val list = root.findAccessibilityNodeInfosByText(text)
             if (!list.isNullOrEmpty()) {
                 for (node in list) {
-                    val nText = node.text?.toString()?.lowercase() ?: ""
-                    if (confirmTexts.any { nText == it }) {
-                        return node
+                    val nText = node.text?.toString()?.lowercase()?.trim() ?: ""
+                    if (confirmKeywords.any { nText == it || nText.contains(it) }) {
+                        if (!nText.contains("cancel")) {
+                            return node
+                        }
                     }
                 }
             }
@@ -207,12 +241,17 @@ class SpotiGuardAccessibilityService : AccessibilityService() {
 
         val confirmIds = listOf(
             "android:id/button1",
-            "com.android.settings:id/button1"
+            "com.android.settings:id/button1",
+            "com.samsung.android.settings:id/button1"
         )
         for (id in confirmIds) {
             val list = root.findAccessibilityNodeInfosByViewId(id)
             if (!list.isNullOrEmpty()) {
-                return list[0]
+                val node = list[0]
+                val t = node.text?.toString()?.lowercase() ?: ""
+                if (!t.contains("cancel")) {
+                    return node
+                }
             }
         }
 

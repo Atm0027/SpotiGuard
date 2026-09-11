@@ -83,16 +83,13 @@ object SpotifyController {
         }
     }
 
-    /**
-     * Intenta forzar detención directa por Root (si el terminal tiene permisos superusuario).
-     */
     fun tryRootForceStop(): Boolean {
         return try {
             val cmd = "am force-stop $SPOTIFY_PACKAGE && am force-stop $SPOTIFY_LITE_PACKAGE"
             val process = Runtime.getRuntime().exec(arrayOf("su", "-c", cmd))
             val exitCode = process.waitFor()
             if (exitCode == 0) {
-                Log.i(TAG, "Spotify detenido exitosamente vía Root (su am force-stop).")
+                Log.i(TAG, "Spotify detenido exitosamente vía Root.")
                 true
             } else {
                 false
@@ -102,9 +99,6 @@ object SpotifyController {
         }
     }
 
-    /**
-     * killBackgroundProcesses estándar (funciona en Android <= 13 y procesos compartidos).
-     */
     fun killSpotify(context: Context) {
         try {
             val am = context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
@@ -154,64 +148,59 @@ object SpotifyController {
     }
 
     /**
-     * Maniobra Infalible de Salto de Anuncio:
-     * 1. Silencia el audio instantáneamente (0ms) para que el anuncio nunca se escuche.
-     * 2. Envía stop a la reproducción multimedia.
-     * 3. Ejecuta cierre forzoso (Root si disponible, o Servicio de Accesibilidad automatizado).
-     * 4. Relanza Spotify limpio.
-     * 5. Purgar buffer (Next) y reanudar reproducción (Play).
-     * 6. Restaura el volumen exacto original.
+     * Maniobra Kill & Relaunch pura (Sin silenciar):
+     * 1. Pausa y detiene Spotify.
+     * 2. Fuerza el cierre de Spotify mediante Accesibilidad o Root.
+     * 3. Vuelve a abrir Spotify en pantalla limpia.
+     * 4. Avanza el búfer con Next y pulsa Play para reanudar la música.
      */
     fun restartAndResume(context: Context, onComplete: (() -> Unit)? = null) {
-        Log.i(TAG, "Iniciando maniobra de cierre forzoso y reinicio para saltar anuncio...")
-
-        // 1. Silenciar inmediatamente
-        AudioController.mute(context)
+        Log.i(TAG, "Iniciando cierre forzoso, reapertura y play de Spotify...")
         sendMediaStop(context)
 
         val mainHandler = Handler(Looper.getMainLooper())
 
-        // 2. Intentar Root
+        // 1. Si hay Root, forzar detención directa por comando
         if (tryRootForceStop()) {
             mainHandler.postDelayed({
                 relaunchAndResumePlayback(context, onComplete)
-            }, 600)
+            }, 500)
             return
         }
 
-        // 3. Si el Servicio de Accesibilidad está activo, usarlo para forzar la detención
+        // 2. Si el servicio de accesibilidad está activo, pulsar "Forzar cierre" automáticamente
         if (SpotiGuardAccessibilityService.isServiceRunning()) {
-            Log.i(TAG, "Solicitando forzado de detención mediante Servicio de Accesibilidad...")
+            Log.i(TAG, "Ejecutando forzado de cierre automático por Accesibilidad...")
             SpotiGuardAccessibilityService.requestForceStop(context) {
                 mainHandler.postDelayed({
                     relaunchAndResumePlayback(context, onComplete)
-                }, 400)
+                }, 300)
             }
             return
         }
 
-        // 4. Fallback si no hay Root ni Accesibilidad
-        Log.w(TAG, "Accesibilidad ni Root activos. Ejecutando killBackgroundProcesses + relanzamiento con audio silenciado.")
+        // 3. Fallback estándar
+        Log.w(TAG, "Accesibilidad ni Root activos. Intentando killBackgroundProcesses...")
         killSpotify(context)
         mainHandler.postDelayed({
             relaunchAndResumePlayback(context, onComplete)
-        }, 700)
+        }, 600)
     }
 
     private fun relaunchAndResumePlayback(context: Context, onComplete: (() -> Unit)? = null) {
         val mainHandler = Handler(Looper.getMainLooper())
 
+        Log.i(TAG, "Relanzando Spotify...")
         relaunchSpotify(context)
 
         mainHandler.postDelayed({
+            Log.i(TAG, "Enviando Media Next a Spotify...")
             sendMediaNext(context)
             mainHandler.postDelayed({
+                Log.i(TAG, "Enviando Media Play a Spotify...")
                 sendMediaPlay(context)
-                mainHandler.postDelayed({
-                    AudioController.unmute(context)
-                    onComplete?.invoke()
-                }, 400)
-            }, 400)
+                onComplete?.invoke()
+            }, 350)
         }, 1200)
     }
 }

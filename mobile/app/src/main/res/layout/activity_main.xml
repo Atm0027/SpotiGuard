@@ -265,7 +265,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Requisitos listos: Emisión, Batería y Accesibilidad verificados."
+                        android:text="Requisitos listos: Emisión de Spotify y Batería sin restricciones verificados."
                         android:textColor="#34D399"
                         android:textSize="12sp"
                         android:textStyle="bold" />
