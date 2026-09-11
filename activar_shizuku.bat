@@ -54,14 +54,8 @@ if %errorlevel% neq 0 (
 )
 
 echo.
-echo [3/3] Iniciando el servicio Shizuku a nivel de sistema mediante ADB...
-rem Despertar Shizuku si acaba de instalarse
-"%ADB_PATH%" shell am start -n moe.shizuku.privileged.api/rikka.shizuku.ui.MainActivity >nul 2>&1
-timeout /t 1 /nobreak >nul
-rem Ejecutar start.sh probando todas las rutas validas en Android 8 a 16
-"%ADB_PATH%" shell "sh /sdcard/Android/data/moe.shizuku.privileged.api/start.sh 2>/dev/null || sh /storage/emulated/0/Android/data/moe.shizuku.privileged.api/start.sh 2>/dev/null || sh /sdcard/Android/data/moe.shizuku.privileged.api/files/start.sh 2>/dev/null || sh /storage/emulated/0/Android/data/moe.shizuku.privileged.api/files/start.sh 2>/dev/null"
-rem Volver a la pantalla principal
-"%ADB_PATH%" shell input keyevent KEYCODE_HOME >nul 2>&1
+echo [3/3] Iniciando el servicio Shizuku en segundo plano (sin tocar la pantalla)...
+"%ADB_PATH%" shell "PKG_DIR=$(pm path moe.shizuku.privileged.api | head -n 1 | cut -d: -f2 | sed 's/base.apk//'); if [ -n "$PKG_DIR" ]; then ${PKG_DIR}lib/arm64/libshizuku.so 2>/dev/null || ${PKG_DIR}lib/arm/libshizuku.so 2>/dev/null || sh /sdcard/Android/data/moe.shizuku.privileged.api/start.sh 2>/dev/null; fi" 
 
 echo.
 echo ========================================================

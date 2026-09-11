@@ -75,10 +75,7 @@ if %errorlevel% equ 0 (
     if exist "%~dp0shizuku.apk" (
         echo [INFO] Configurando Shizuku para cierre forzoso silencioso...
         "%ADB_PATH%" install -r "%~dp0shizuku.apk" >nul 2>&1
-        "%ADB_PATH%" shell am start -n moe.shizuku.privileged.api/rikka.shizuku.ui.MainActivity >nul 2>&1
-        timeout /t 1 /nobreak >nul
-        "%ADB_PATH%" shell "sh /sdcard/Android/data/moe.shizuku.privileged.api/start.sh 2>/dev/null || sh /storage/emulated/0/Android/data/moe.shizuku.privileged.api/start.sh 2>/dev/null || sh /sdcard/Android/data/moe.shizuku.privileged.api/files/start.sh 2>/dev/null || sh /storage/emulated/0/Android/data/moe.shizuku.privileged.api/files/start.sh 2>/dev/null"
-        "%ADB_PATH%" shell input keyevent KEYCODE_HOME >nul 2>&1
+        "%ADB_PATH%" shell "PKG_DIR=$(pm path moe.shizuku.privileged.api | head -n 1 | cut -d: -f2 | sed 's/base.apk//'); if [ -n "$PKG_DIR" ]; then ${PKG_DIR}lib/arm64/libshizuku.so 2>/dev/null || ${PKG_DIR}lib/arm/libshizuku.so 2>/dev/null || sh /sdcard/Android/data/moe.shizuku.privileged.api/start.sh 2>/dev/null; fi" 
     )
     
     echo Ya puedes abrir SpotiGuard en tu movil.
