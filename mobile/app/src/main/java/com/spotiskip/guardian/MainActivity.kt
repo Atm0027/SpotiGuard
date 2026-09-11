@@ -21,7 +21,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
-import com.spotiskip.guardian.services.SpotiGuardAccessibilityService
 import com.spotiskip.guardian.services.SpotiGuardService
 import com.spotiskip.guardian.utils.SpotifyController
 import rikka.shizuku.Shizuku

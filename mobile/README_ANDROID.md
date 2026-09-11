@@ -1,6 +1,6 @@
 # SpotiGuard Mobile (Android)
 
-Aplicación nativa de Android que detecta en tiempo real los anuncios de Spotify y los neutraliza de forma automática mediante la técnica de **Cierre Forzoso a Nivel de Sistema y Relanzamiento Limpio (Force Stop -> Relaunch -> Purge Buffer -> Play)** con **Shizuku API (Shell ADB) / Root**, **Watchdog de fin de pista** y **detección dinámica de requisitos**.
+Aplicación nativa de Android que detecta en tiempo real los anuncios de Spotify y los neutraliza de forma automática mediante la técnica de **Cierre Forzoso a Nivel de Sistema y Relanzamiento Limpio (Force Stop -> Relaunch -> Purge Buffer -> Play)** con **Shizuku API (Shell ADB) / Root**, **Watchdog de fin de pista**, **detección dinámica de requisitos** y **cero permisos invasivos (Servicio de Accesibilidad eliminado por completo)**.
 
 > **Nota de Diseño**: De acuerdo con las directrices del proyecto, SpotiGuard **NO silencia el audio ni enmascara los anuncios**: destruye físicamente el proceso de Spotify en segundo plano (purgando la publicidad de la memoria), relanza la app al instante y reanuda la música automáticamente, exactamente igual que en PC.
 

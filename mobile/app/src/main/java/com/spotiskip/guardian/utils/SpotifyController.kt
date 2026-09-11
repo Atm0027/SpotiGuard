@@ -13,7 +13,6 @@ import android.view.KeyEvent
 import android.os.Build
 import java.io.File
 import java.util.concurrent.TimeUnit
-import com.spotiskip.guardian.services.SpotiGuardAccessibilityService
 
 object SpotifyController {
     private const val TAG = "SpotifyController"

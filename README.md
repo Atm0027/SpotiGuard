@@ -133,7 +133,7 @@ Ads Spotify/
 └── mobile/                        # Aplicación nativa para Móvil (Android)
     ├── README_ANDROID.md          # Guía técnica y de instalación para Android
     └── app/src/main/
-        ├── AndroidManifest.xml    # Manifiesto con BootReceiver, SpotifyLaunchReceiver y Accessibility
+        ├── AndroidManifest.xml    # Manifiesto con BootReceiver, SpotifyLaunchReceiver y ShizukuProvider
         ├── java/com/spotiskip/guardian/
         │   ├── MainActivity.kt    # UI reactiva con autodesaparición de requisitos cumplidos
         │   ├── receivers/
