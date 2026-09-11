@@ -15,12 +15,13 @@ El sistema se ejecuta en segundo plano y **se activa de forma 100% autónoma en 
 
 ### 📥 Descargas Directas Listas para Usar
 
-* 📱 **Móvil (Android)**: **[`SpotiGuard-1.0.7-17.apk`](SpotiGuard-1.0.7-17.apk)** *(4.74 MB — Bypass puro por cierre forzoso y reinicio automático sin mutear, watchdog anti-anuncios silenciosos, compatible con Samsung One UI / Android 16)*
+* 📱 **Móvil (Android)**: **[`SpotiGuard-1.0.8-18.apk`](SpotiGuard-1.0.8-18.apk)** *(4.76 MB — Cierre forzoso silencioso a nivel de sistema idéntico a PC, cero ventanas de Ajustes, Shizuku & Root, sin mutear)*
 * 🖥️ **PC (Windows)**: **[`SpotiGuard-Windows-1.0.0-4.zip`](SpotiGuard-Windows-1.0.0-4.zip)** *(47.9 MB — Paquete portable con ejecutable de 64 bits y reanudación Windows SMTC)*
 * 🚀 **Lanzador Conjunto en PC (1 Clic)**: **[`Spotify (Protegido con SpotiGuard).lnk`](Spotify%20(Protegido%20con%20SpotiGuard).lnk)** *(Abre Spotify y SpotiGuard juntos de forma simultánea)*
-* 🔌 **Instalador Rápido por ADB para Android desde PC**: **[`instalar_android.bat`](instalar_android.bat)** *(Instalación en 1 clic en tu móvil vía cable USB o Wi-Fi sin advertencias de navegador)*
+* 🔌 **Instalador Rápido por ADB para Android desde PC**: **[`instalar_android.bat`](instalar_android.bat)** *(Instalación en 1 clic de SpotiGuard y Shizuku en tu móvil vía USB)*
+* ⚡ **Activador Shizuku en 1 Clic**: **[`activar_shizuku.bat`](activar_shizuku.bat)** *(Arranca el servicio de cierre silencioso en tu móvil en 2 segundos)*
 * 🌐 **Repositorio Oficial en GitHub**: **[https://github.com/Atm0027/SpotiGuard](https://github.com/Atm0027/SpotiGuard)**
-* 🚀 **Última Release Oficial (v1.0.7-17)**: **[https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.7-17](https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.7-17)**
+* 🚀 **Última Release Oficial (v1.0.8-18)**: **[https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.8-18](https://github.com/Atm0027/SpotiGuard/releases/tag/v1.0.8-18)**
 
 ---
 
@@ -37,28 +38,28 @@ Tanto en **Windows** como en **Android**, SpotiGuard está diseñado para funcio
 1. **Auto-inicio al encender el móvil (`BootReceiver`)**: SpotiGuard se reactiva automáticamente al reiniciar el teléfono y permanece en espera de bajo consumo.
 2. **Auto-despertar con Spotify (`SpotifyLaunchReceiver`)**: En cuanto Spotify empieza a reproducir música, Android emite el evento `com.spotify.music.metadatachanged` y SpotiGuard se activa automáticamente si no estaba corriendo.
 3. **Lanzador Directo desde la App**: Si abres SpotiGuard y pulsas **"🚀 Abrir Spotify"**, el servicio se inicia y abre Spotify en pantalla simultáneamente.
-4. **Detección Dinámica de Requisitos en Interfaz**: Los botones de *"Estado de emisión"*, *"Optimización de batería"* y *"Accesibilidad"* **se ocultan automáticamente de la app en cuanto el sistema detecta que están concedidos**, mostrando un recuadro verde de verificación completa.
+4. **Detección Dinámica de Requisitos en Interfaz**: Los botones de *"Estado de emisión"*, *"Optimización de batería"* y *"Cierre Silencioso (Shizuku)"* **se ocultan automáticamente de la app en cuanto el sistema detecta que están concedidos**, mostrando un recuadro verde de verificación completa.
 
 ---
 
 ## 🔬 ¿Cómo Funciona Técnicamente la Neutralización de Anuncios en Android?
 
-### 1. Bypass Puro sin Muteo (Cierre Forzoso y Relanzamiento Limpio):
+### 1. Bypass Puro sin Muteo (Cierre Forzoso Real a Nivel de Kernel):
 * **Cero Silenciamiento**: La app no silencia el audio ni enmascara la publicidad; destruye el proceso de Spotify en el acto para purgar el anuncio del búfer de reproducción.
-* **Servicio de Accesibilidad Rápido (`SpotiGuardAccessibilityService`)**: Pulsa automáticamente "Forzar cierre" / "Forzar detención" y confirma el diálogo del sistema en ~150 ms. Optimizado para Samsung One UI, Xiaomi HyperOS, Google Pixel y Android estándar. Cierra inmediatamente la pantalla de Ajustes con botón Atrás del sistema para no dejar ventanas abiertas.
-* **Soporte Root Directo**: En teléfonos con permisos Root, ejecuta `su am force-stop com.spotify.music` instantáneamente sin necesidad de interacción visual.
+* **Cierre Silencioso Instantáneo mediante Shizuku (`am force-stop`)**: Al detectar un anuncio, ejecuta la orden de sistema `am force-stop com.spotify.music` a nivel de proceso en 0.05 segundos en segundo plano.
+* **Cero Pantallas de Ajustes**: Se ha eliminado por completo la apertura de la ventana de Información de la Aplicación y los clics de accesibilidad. Spotify se cierra de forma 100% invisible sin interrumpir tus juegos ni tus aplicaciones en uso.
+* **Soporte Root Directo**: En teléfonos con permisos Root, ejecuta `su am force-stop com.spotify.music` instantáneamente.
 
 ### 2. Detección Dual de Anuncios en Android:
 1. **Watchdog de Fin de Canción**: Spotify **no emite broadcasts al comenzar un anuncio**. SpotiGuard calcula la duración exacta de la pista musical activa y programa un watchdog. Si al terminar no llega una nueva canción, deduce la presencia del anuncio y activa el cierre forzoso de inmediato.
 2. **Detección Reactiva por ID y Metadatos**: Captura cuñas comerciales con IDs no estándar (`!id.startsWith("spotify:track:")`), menciones publicitarias ("Publicidad", "Advertisement", "Spotify Free", "Werbung", etc.).
 
-### 3. Secuencia de Neutralización:
+### 3. Secuencia de Neutralización (Idéntica a PC):
 1. **Detención multimedia**: `sendMediaStop()` (`KEYCODE_MEDIA_PAUSE` y `STOP`).
-2. **Cierre forzoso de Spotify**: Mediante `SpotiGuardAccessibilityService` o Root.
-3. **Cierre de Ajustes**: Retorno instantáneo (`GLOBAL_ACTION_BACK`) para no dejar abierta la información de Spotify.
-4. **Relanzamiento limpio**: Apertura de Spotify con el búfer publicitario purgado.
-5. **Purga y salto**: `KEYCODE_MEDIA_NEXT` para cargar la siguiente pista legítima.
-6. **Reanudación automática**: `KEYCODE_MEDIA_PLAY` para iniciar la música sin interrupciones.
+2. **Cierre forzoso de Spotify**: Mediante Shizuku o Root en segundo plano sin desplegar ventanas.
+3. **Relanzamiento limpio**: Apertura de Spotify con el búfer publicitario purgado.
+4. **Purga y salto**: `KEYCODE_MEDIA_NEXT` para cargar la siguiente pista legítima.
+5. **Reanudación automática**: `KEYCODE_MEDIA_PLAY` para iniciar la música sin interrupciones.
 
 ---
 
@@ -71,9 +72,7 @@ Ubicada en la carpeta [`pc/`](pc/).
 * **Integración con la Bandeja del Sistema (System Tray)**: Permite minimizar la aplicación discretamente junto al reloj de Windows. Notifica cada vez que un anuncio es saltado.
 * **Auto-activación con Spotify**: Un vigilante (*Watcher*) en segundo plano detecta cuándo abres Spotify y pone en marcha la protección sin que tengas que pulsar nada.
 * **Auto-arranque con Windows**: Registrado en el inicio de Windows para vigilar de fondo sin ventanas molestas.
-* **Dos Modos de Operación**:
-  1. **Reinicio Rápido (Skip & Relaunch)**: Cierra y reabre Spotify instantáneamente en ~2-4 segundos, saltando a la siguiente canción real.
-  2. **Silenciador Furtivo (Stealth Mute)**: Muta al 0% el volumen exclusivo de Spotify mientras dura el anuncio y lo restablece exactamente cuando empieza la canción.
+* **Modo Reinicio Rápido (Skip & Relaunch)**: Cierra y reabre Spotify instantáneamente en ~2-4 segundos, saltando a la siguiente canción real.
 
 ---
 
@@ -81,20 +80,19 @@ Ubicada en la carpeta [`pc/`](pc/).
 
 Ubicada en la carpeta [`mobile/`](mobile/). Proyecto nativo completo en **Kotlin**.
 
-### Novedades v1.0.7-17:
-* **Corrección de Apertura Persistente de Información de la Aplicación**:
-  - Resuelto el problema por el cual la ventana de Ajustes de Spotify se quedaba abierta en la pantalla.
-  - Implementado cierre inmediato mediante acción global Atrás (`GLOBAL_ACTION_BACK`) al confirmar el forzado o en caso de timeout.
-* **Diferenciación Estricta del Diálogo de Confirmación en Samsung One UI**:
-  - Detección prioritaria del botón afirmativo `android:id/button1` del sistema.
-  - Filtrado para ignorar botones de la barra de acciones inferior (`forcestop_button`), eliminando falsos positivos.
-* **Despertar Automático de Pantalla (`WakeLock`)**:
-  - Encendido breve de la pantalla si entra un anuncio con el móvil bloqueado o apagado, permitiendo ejecutar la accesibilidad sin quedar atrapado en la pantalla de bloqueo.
-* **Blindaje contra Limpieza de Tareas Recientes**:
-  - Añadido `stopWithTask="false"` a los servicios y `excludeFromRecents="true"` a `MainActivity` para evitar que deslizar SpotiGuard en Recientes rompa el servicio de accesibilidad.
+### Novedades v1.0.8-18:
+* **Cierre Forzoso 100% Silencioso a Nivel de Sistema (Shizuku & Root)**:
+  - Eliminado definitivamente el método invasivo de abrir los Ajustes del sistema.
+  - Integrado el SDK oficial de **Shizuku API** (`dev.rikka.shizuku:api:13.1.5`).
+  - Cierre instantáneo del proceso de Spotify en 0.05 segundos en segundo plano sin interrumpir lo que estés haciendo en la pantalla.
+* **Script de Activación en 1 Clic (`activar_shizuku.bat`)**:
+  - Permite activar el servicio de cierre silencioso en tu móvil en 2 segundos conectando el cable USB.
+  - Incluye el paquete oficial de Shizuku (`shizuku.apk`) para instalación desatendida.
+* **Flujo Idéntico a PC**:
+  - Detección -> Kill instantáneo -> Reopen -> Play. Cero muteos.
 
 ### 📲 Descarga e Instalación del APK Oficial:
-* **Descarga directa**: **[`SpotiGuard-1.0.7-17.apk`](SpotiGuard-1.0.7-17.apk)** *(4.74 MB)*.
+* **Descarga directa**: **[`SpotiGuard-1.0.8-18.apk`](SpotiGuard-1.0.8-18.apk)** *(4.76 MB)*.
 * **Firma Oficial**: Almacén de claves RSA 2048-bit (`CN=SpotiGuard`) con esquemas **v2** y **v3**.
 
 ---
@@ -103,12 +101,12 @@ Ubicada en la carpeta [`mobile/`](mobile/). Proyecto nativo completo en **Kotlin
 
 | Componente | Formato | Ejemplo en SpotiGuard | Significado |
 | :--- | :--- | :--- | :--- |
-| **`versionName`** | SemVer `X.Y.Z` | `1.0.7` | Nombre semántico deducido automáticamente de Conventional Commits. |
-| **`versionCode`** | Entero creciente | `17` | Recuento estricto de commits (`git rev-list --count HEAD`). Nunca retrocede. |
-| **Etiqueta Git (Tag)** | `v<versionName>-<versionCode>` | `v1.0.7-17` | El estado vive en las etiquetas de git. |
-| **Título de Release** | `<App> <versionName> (<versionCode>)` | `SpotiGuard 1.0.7 (17)` | Título estandarizado para publicaciones de GitHub. |
+| **`versionName`** | SemVer `X.Y.Z` | `1.0.8` | Nombre semántico deducido automáticamente de Conventional Commits. |
+| **`versionCode`** | Entero creciente | `18` | Recuento estricto de commits (`git rev-list --count HEAD`). Nunca retrocede. |
+| **Etiqueta Git (Tag)** | `v<versionName>-<versionCode>` | `v1.0.8-18` | El estado vive en las etiquetas de git. |
+| **Título de Release** | `<App> <versionName> (<versionCode>)` | `SpotiGuard 1.0.8 (18)` | Título estandarizado para publicaciones de GitHub. |
 | **Paquete Windows** | `<App>-Windows-<versionName>-<versionCode>.zip` | `SpotiGuard-Windows-1.0.0-4.zip` | Binario portable empaquetado para PC. |
-| **Paquete Android** | `<App>-<versionName>-<versionCode>.apk` | `SpotiGuard-1.0.7-17.apk` | Paquete APK firmado para móviles. |
+| **Paquete Android** | `<App>-<versionName>-<versionCode>.apk` | `SpotiGuard-1.0.8-18.apk` | Paquete APK firmado para móviles. |
 
 ---
 
@@ -117,7 +115,9 @@ Ubicada en la carpeta [`mobile/`](mobile/). Proyecto nativo completo en **Kotlin
 ```text
 Ads Spotify/
 ├── Spotify (Protegido con SpotiGuard).lnk # Acceso directo conjunto para abrir Spotify + SpotiGuard
-├── SpotiGuard-1.0.6-16.apk        # Paquete APK oficial firmado para Android (4.74 MB)
+├── SpotiGuard-1.0.8-18.apk        # Paquete APK oficial firmado para Android (4.76 MB)
+├── shizuku.apk                    # APK oficial de Shizuku para cierre silencioso (v13.6.0)
+├── activar_shizuku.bat            # Activador en 1 clic de Shizuku vía ADB
 ├── SpotiGuard-Windows-1.0.0-4.zip # Paquete ZIP portable para Windows (47.9 MB)
 ├── Lanzar Spotify Protegido.bat   # Script para lanzar Spotify y SpotiGuard en PC
 ├── instalar_android.bat           # Instalador automático en 1 clic para móvil vía ADB

@@ -6,12 +6,12 @@ plugins {
 val codigoVersion: Int =
     providers.gradleProperty("spotiguardVersionCode").orNull?.toIntOrNull()
         ?: System.getenv("SPOTIGUARD_VERSION_CODE")?.toIntOrNull()
-        ?: 17
+        ?: 18
 
 val nombreVersion: String =
     providers.gradleProperty("spotiguardVersionName").orNull
         ?: System.getenv("SPOTIGUARD_VERSION_NAME")
-        ?: "1.0.7"
+        ?: "1.0.8"
 
 android {
     namespace = "com.spotiskip.guardian"
@@ -79,4 +79,8 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+
+    // Shizuku API para cierre forzoso silencioso e instantáneo idéntico a PC
+    implementation("dev.rikka.shizuku:api:13.1.5")
+    implementation("dev.rikka.shizuku:provider:13.1.5")
 }

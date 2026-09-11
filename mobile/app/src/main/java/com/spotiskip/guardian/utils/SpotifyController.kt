@@ -147,10 +147,41 @@ object SpotifyController {
         sendMediaKey(context, KeyEvent.KEYCODE_MEDIA_PLAY)
     }
 
+    fun tryShizukuForceStop(context: Context): Boolean {
+        return try {
+            if (!rikka.shizuku.Shizuku.pingBinder()) {
+                Log.d(TAG, "Shizuku no está en ejecución.")
+                return false
+            }
+            if (rikka.shizuku.Shizuku.checkSelfPermission() != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                Log.d(TAG, "Permiso de Shizuku no concedido.")
+                return false
+            }
+
+            val pkg = if (isSpotifyInstalled(context)) SPOTIFY_PACKAGE else SPOTIFY_LITE_PACKAGE
+            val cmd = arrayOf("am", "force-stop", pkg)
+
+            val method = rikka.shizuku.Shizuku::class.java.getDeclaredMethod(
+                "newProcess",
+                Array<String>::class.java,
+                Array<String>::class.java,
+                String::class.java
+            )
+            method.isAccessible = true
+            val process = method.invoke(null, cmd, null, null) as Process
+            val exitCode = process.waitFor()
+            Log.i(TAG, "Spotify cerrado limpiamente mediante Shizuku (exitCode: $exitCode).")
+            exitCode == 0
+        } catch (e: Exception) {
+            Log.e(TAG, "Error en tryShizukuForceStop: ${e.message}", e)
+            false
+        }
+    }
+
     /**
-     * Maniobra Kill & Relaunch pura (Sin silenciar):
+     * Maniobra Kill & Relaunch pura (Cierre real a nivel de sistema idéntico a PC):
      * 1. Pausa y detiene Spotify.
-     * 2. Fuerza el cierre de Spotify mediante Accesibilidad o Root.
+     * 2. Fuerza el cierre de Spotify inmediatamente mediante Shizuku o Root (100% silencioso).
      * 3. Vuelve a abrir Spotify en pantalla limpia.
      * 4. Avanza el búfer con Next y pulsa Play para reanudar la música.
      */
@@ -160,31 +191,27 @@ object SpotifyController {
 
         val mainHandler = Handler(Looper.getMainLooper())
 
-        // 1. Si hay Root, forzar detención directa por comando
+        // 1. Si hay Root, forzar detención directa por comando (100% silencioso)
         if (tryRootForceStop()) {
             mainHandler.postDelayed({
                 relaunchAndResumePlayback(context, onComplete)
-            }, 500)
+            }, 350)
             return
         }
 
-        // 2. Si el servicio de accesibilidad está activo, pulsar "Forzar cierre" automáticamente
-        if (SpotiGuardAccessibilityService.isServiceRunning()) {
-            Log.i(TAG, "Ejecutando forzado de cierre automático por Accesibilidad...")
-            SpotiGuardAccessibilityService.requestForceStop(context) {
-                mainHandler.postDelayed({
-                    relaunchAndResumePlayback(context, onComplete)
-                }, 300)
-            }
+        // 2. Si hay Shizuku activo, forzar detención directa a nivel de sistema (100% silencioso sin pantallas)
+        if (tryShizukuForceStop(context)) {
+            mainHandler.postDelayed({
+                relaunchAndResumePlayback(context, onComplete)
+            }, 350)
             return
         }
 
-        // 3. Fallback estándar
-        Log.w(TAG, "Accesibilidad ni Root activos. Intentando killBackgroundProcesses...")
+        // 3. Fallback limpio: Relanzar inmediatamente con Next y Play
         killSpotify(context)
         mainHandler.postDelayed({
             relaunchAndResumePlayback(context, onComplete)
-        }, 600)
+        }, 400)
     }
 
     private fun relaunchAndResumePlayback(context: Context, onComplete: (() -> Unit)? = null) {

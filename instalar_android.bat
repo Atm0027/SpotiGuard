@@ -68,8 +68,17 @@ echo [3/3] Ejecutando instalacion via ADB...
 if %errorlevel% equ 0 (
     echo.
     echo ========================================================
-    echo  INSTALACION COMPLETADA CON EXITO EN TU DISPOSITIVO!
+    echo  INSTALACION DE SPOTIGUARD COMPLETADA CON EXITO!
     echo ========================================================
+    
+    rem Instalar y arrancar Shizuku para cierre silencioso
+    if exist "%~dp0shizuku.apk" (
+        echo [INFO] Configurando Shizuku para cierre forzoso silencioso...
+        "%ADB_PATH%" install -r "%~dp0shizuku.apk" >nul 2>&1
+        "%ADB_PATH%" shell sh /sdcard/Android/data/moe.shizuku.privileged.api/start.sh >nul 2>&1
+        "%ADB_PATH%" shell sh /storage/emulated/0/Android/data/moe.shizuku.privileged.api/start.sh >nul 2>&1
+    )
+    
     echo Ya puedes abrir SpotiGuard en tu movil.
 ) else (
     echo.

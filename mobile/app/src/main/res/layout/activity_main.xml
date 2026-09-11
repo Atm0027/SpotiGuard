@@ -231,13 +231,13 @@
                     app:backgroundTint="#1E293B"
                     app:cornerRadius="8dp" />
 
-                <!-- Botón Accesibilidad SpotiGuard -->
+                <!-- Botón Cierre Silencioso Shizuku -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnAccessibilityService"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="3. Activar Accesibilidad SpotiGuard"
+                    android:text="3. Activar Cierre Silencioso (Shizuku)"
                     android:textColor="@color/text_primary"
                     app:backgroundTint="#1E293B"
                     app:cornerRadius="8dp" />
@@ -259,15 +259,15 @@
                         android:layout_height="wrap_content"
                         android:text="✅"
                         android:textSize="18sp"
-                        android:layout_marginEnd="10dp" />
+                        android:layout_marginEnd="8dp" />
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Requisitos listos: Emisión de Spotify y Batería sin restricciones verificados."
-                        android:textColor="#34D399"
-                        android:textSize="12sp"
+                        android:text="Requisitos listos: Emisión, Batería y Cierre Silencioso verificados."
+                        android:textColor="@color/emerald_green"
+                        android:textSize="13sp"
                         android:textStyle="bold" />
                 </LinearLayout>
             </LinearLayout>

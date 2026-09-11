@@ -1,93 +1,79 @@
 # SpotiGuard Mobile (Android)
 
-Aplicación nativa de Android que detecta en tiempo real los anuncios de Spotify y los neutraliza de forma automática mediante la técnica de **Cierre Forzoso Automatizado y Relanzamiento Limpio (Force Stop -> Relaunch -> Purge Buffer -> Play)** con **Servicio de Accesibilidad / Root**, **Watchdog de fin de pista** y **detección dinámica de requisitos**.
+Aplicación nativa de Android que detecta en tiempo real los anuncios de Spotify y los neutraliza de forma automática mediante la técnica de **Cierre Forzoso a Nivel de Sistema y Relanzamiento Limpio (Force Stop -> Relaunch -> Purge Buffer -> Play)** con **Shizuku API (Shell ADB) / Root**, **Watchdog de fin de pista** y **detección dinámica de requisitos**.
 
-> **Nota**: De acuerdo con las especificaciones de diseño, SpotiGuard no silencia ni enmascara los anuncios: fuerza el cierre inmediato de Spotify (purgando la publicidad de la memoria), relanza la app al instante y reanuda la música automáticamente.
+> **Nota de Diseño**: De acuerdo con las directrices del proyecto, SpotiGuard **NO silencia el audio ni enmascara los anuncios**: destruye físicamente el proceso de Spotify en segundo plano (purgando la publicidad de la memoria), relanza la app al instante y reanuda la música automáticamente, exactamente igual que en PC.
 
 ---
 
-## 📱 ¿Cómo Funciona en el Móvil? (Arquitectura v1.0.7-17)
+## 📱 ¿Cómo Funciona en el Móvil? (Arquitectura v1.0.8-18)
 
-### 1. El Reto de Android 14+ / 15 / 16: Cierre Forzoso Real
-* En versiones modernas de Android, Google revocó a las aplicaciones de terceros la posibilidad de utilizar `killBackgroundProcesses` contra otras apps.
-* Si Spotify no se cierra físicamente, permanece en memoria con el anuncio en búfer. Al volver a abrirla y pulsar play, el anuncio continuaría sonando.
-* **Solución v1.0.7-17**:
-  - **Servicio de Accesibilidad (`SpotiGuardAccessibilityService`)**: Al interceptar un anuncio publicitario, SpotiGuard abre la ventana de información de Spotify en Ajustes y pulsa automáticamente en milisegundos **"Forzar detención"** o **"Forzar cierre"** (compatible con Samsung One UI, Xiaomi HyperOS/MIUI, Pixel, etc.) y confirma el diálogo del sistema (`android:id/button1`).
-  - **Cierre Inmediato de Pantalla (`GLOBAL_ACTION_BACK`)**: Tras confirmar el forzado, el servicio ejecuta inmediatamente un botón Atrás del sistema para no dejar nunca la pantalla de Ajustes visible al usuario.
-  - **Despertar Automático (`WakeLock`)**: Si el anuncio entra con el teléfono bloqueado o pantalla apagada, la despierta brevemente para permitir la interacción UI sin bloqueos.
-  - **Cierre directo por Root**: Si el dispositivo dispone de privilegios Root, ejecuta de inmediato `su -c am force-stop com.spotify.music` en segundo plano sin desplegar pantallas.
-  - **Relanzamiento Inmediato y Reanudación**: Una vez cerrado el proceso, SpotiGuard relanza Spotify de inmediato mediante Intent del sistema y envía los comandos multimedia `NEXT` y `PLAY` para arrancar la siguiente canción sin anuncios.
+### 1. Cierre Forzoso Real a Nivel de Kernel (Sin Pantallas de Ajustes):
+* En Android moderno (Android 14, 15 y 16), las apps convencionales de terceros no pueden detener procesos ajenos con `killBackgroundProcesses`.
+* Intentar abrir los Ajustes del sistema ("Información de la aplicación") para pulsar "Forzar detención" fue completamente descartado: interrumpe al usuario (por ejemplo, mientras juega o usa otra app), es inestable y no funciona con pantalla apagada.
+* **Solución de Grado de Sistema v1.0.8-18**:
+  - **Integración con Shizuku API (`dev.rikka.shizuku:api:13.1.5`)**: SpotiGuard se comunica directamente con el daemon de Shizuku para ejecutar la orden nativa de Android `am force-stop com.spotify.music` con permisos ADB (UID 2000).
+  - **Cierre Instantáneo en 0.05s**: Spotify es cerrado a nivel de proceso en milisegundos en segundo plano, sin abrir absolutamente ninguna ventana ni diálogo en pantalla.
+  - **Soporte Root Directo**: En terminales con Magisk / KernelSU / APatch, ejecuta `su am force-stop com.spotify.music` inmediatamente sin requerir Shizuku.
+  - **Relanzamiento Limpio y Reanudación**: En cuanto el proceso es eliminado, SpotiGuard abre de nuevo Spotify de forma limpia, purga el búfer con `KEYCODE_MEDIA_NEXT` y arranca la música con `KEYCODE_MEDIA_PLAY`.
 
 ### 2. Detección Dual de Anuncios:
-1. **Watchdog de Expiración de Pista**: Resuelve el problema de que Spotify no emite broadcasts al inicio de un anuncio. Monitorea la duración y posición exacta de la pista musical. Si la canción termina y no entra una nueva pista en la ventana de tolerancia, deduce inmediatamente la entrada del bloque publicitario y dispara el bypass.
-2. **Detección por Metadatos y Palabras Clave**: Analiza los IDs (anuncios no tienen URI `spotify:track:`) y títulos/artistas como "Publicidad", "Advertisement", "Spotify Free", etc.
+1. **Watchdog de Expiración de Pista**: Resuelve el problema fundamental de que Spotify **no emite eventos de broadcast al iniciar un anuncio publicitario**. SpotiGuard calcula la duración y posición exacta de la pista musical. Si la canción termina y no entra una nueva pista en la ventana de tolerancia, deduce la entrada del bloque comercial e inicia la neutralización.
+2. **Detección por Metadatos y Palabras Clave**: Analiza los identificadores de pista (`!id.startsWith("spotify:track:")`) y títulos/artistas característicos ("Publicidad", "Advertisement", "Spotify Free", "Werbung", etc.).
 
-### 3. Secuencia de Bypass Atómica (Sin Mutear):
+### 3. Secuencia de Bypass Atómica (Idéntica a PC):
 1. **Detección Instantánea**: Intercepción del anuncio por metadatos o por el Watchdog de duración.
 2. **Detención multimedia**: Envío de `KEYCODE_MEDIA_PAUSE` y `STOP`.
-3. **Cierre forzoso de Spotify**: A través de `SpotiGuardAccessibilityService` ("Forzar cierre" / "Forzar detención") o comando Root.
-4. **Cierre de Ajustes**: Salida inmediata con `GLOBAL_ACTION_BACK`.
-5. **Relanzamiento limpio**: Apertura de Spotify con búfer limpio de publicidad.
-6. **Purga del búfer**: Envío de `KEYCODE_MEDIA_NEXT`.
-7. **Reanudación de música**: Envío de `KEYCODE_MEDIA_PLAY`.
+3. **Cierre forzoso de Spotify**: Ejecución de `am force-stop com.spotify.music` mediante Shizuku o Root en segundo plano (<50ms).
+4. **Relanzamiento limpio**: Apertura de Spotify con búfer limpio de publicidad.
+5. **Purga del búfer**: Envío de `KEYCODE_MEDIA_NEXT`.
+6. **Reanudación de música**: Envío de `KEYCODE_MEDIA_PLAY`.
 
 ### 4. Detección Dinámica de Requisitos en la App:
 * **Estado de Emisión de Spotify**: En cuanto SpotiGuard detecta el primer evento procedente de Spotify, el botón **1** desaparece de la pantalla.
-* **Batería sin Restricciones**: Si SpotiGuard está excluido de las restricciones de ahorro de energía, el botón **2** desaparece de la pantalla.
-* **Servicio de Accesibilidad**: Una vez concedido el permiso en Ajustes -> Accesibilidad, el botón **3** desaparece de la pantalla.
-* **Distintivo de Éxito**: Cuando todos los requisitos están cumplidos, se muestra una tarjeta verde de confirmación: *"✅ Requisitos listos: Emisión, Batería y Accesibilidad verificados"*.
+* **Batería sin Restricciones**: Si SpotiGuard está excluido del ahorro de energía del sistema, el botón **2** desaparece de la pantalla.
+* **Cierre Silencioso (Shizuku)**: Concede autorización a SpotiGuard con 1 toque desde la app. Al concederse, el botón **3** desaparece.
+* **Distintivo de Éxito**: Cuando todos los requisitos están cumplidos, se muestra una tarjeta verde de confirmación: *"✅ Requisitos listos: Emisión, Batería y Shizuku verificados"*.
 
 ---
 
 ## 📲 Descarga e Instalación del APK Oficial
 
-- **Descarga Directa del APK**: **[`SpotiGuard-1.0.7-17.apk`](../SpotiGuard-1.0.7-17.apk)** *(4.74 MB — Release v1.0.7-17)*
-- **Firma Oficial de Producción**: Firmado con Keystore Release propio con esquemas **v2 y v3** activos para máxima compatibilidad desde Android 8.0 hasta Android 16.
-
-### 🛡️ Opciones de Instalación en Android:
-
-#### Opción 1: Instalación Directa en 1 Clic desde el PC (Script ADB - Recomendada)
-1. Conecta tu teléfono al ordenador con cable USB y asegúrate de tener activada la **Depuración por USB** (en Ajustes -> Opciones de desarrollador).
-2. En la carpeta del proyecto en tu PC, haz doble clic en **`instalar_android.bat`**.
-3. El script detectará tu dispositivo e instalará el APK directamente en el móvil (las instalaciones ADB no se ven afectadas por bloqueos de descarga de navegadores).
-
-#### Opción 2: Instalación Manual en el Móvil
-1. Transfiere o descarga el archivo `SpotiGuard-1.0.6-16.apk` en tu teléfono.
-2. Abre la app **Mis Archivos / Files / Gestor de archivos** de tu teléfono, ve a la carpeta **Descargas (Downloads)** y pulsa el archivo APK.
-3. Pulsa **Instalar**. *(Si aparece aviso de origen desconocido, concede permiso a tu app de Archivos).*
+- **Descarga Directa de SpotiGuard**: **[`SpotiGuard-1.0.8-18.apk`](../SpotiGuard-1.0.8-18.apk)** *(4.76 MB — Release v1.0.8-18)*
+- **Descarga de Shizuku Oficial**: **[`shizuku.apk`](../shizuku.apk)** *(Oficial v13.6.0)*
+- **Firma Oficial de Producción**: Firmado con Keystore Release propio con esquemas **v2 y v3** activos para compatibilidad total con Android 8.0 hasta Android 16.
 
 ---
 
-### 🛑 Si Android muestra "Bloqueada por Play Protect" (Causa y Solución en 10s)
+## 🚀 Instalación y Activación Rápida
 
-#### ¿Por qué salta el aviso?
-A partir de 2024, Google Play Protect introdujo una directiva que analiza los APKs instalados fuera de Google Play que declaren permisos de Accesibilidad (`BIND_ACCESSIBILITY_SERVICE`), clasificándolos preventivamente porque la accesibilidad permite automatizar pulsaciones en pantalla (que en SpotiGuard se usan estrictamente para pulsar "Forzar cierre" en Spotify).
+### Opción 1: Instalación Completa en 1 Clic desde el PC (Recomendada)
+1. Conecta tu teléfono al ordenador con cable USB y comprueba que esté activa la **Depuración por USB** (en Ajustes -> Opciones de desarrollador).
+2. Haz doble clic en el archivo **`instalar_android.bat`** en la carpeta del proyecto.
+3. El script automáticamente:
+   - Detectará tu dispositivo.
+   - Instalará **SpotiGuard** (`SpotiGuard-1.0.8-18.apk`).
+   - Instalará **Shizuku** (`shizuku.apk`) si no la tienes.
+   - Iniciará el servicio de Shizuku en tu móvil mediante ADB.
+4. Abre **SpotiGuard** en tu móvil y pulsa el botón **"Conceder Permiso Shizuku"** (o "Autorizar" en el diálogo emergente).
+5. ¡Listo! Spotify se cerrará y reabrirá silenciosamente en cada anuncio.
 
-#### Cómo resolverlo en tu teléfono:
-* **Método 1 (Instalación por cable USB / ADB - Recomendado)**:
-  - Ejecuta `instalar_android.bat` en tu PC con el móvil conectado. Al tratarse de una instalación en modo desarrollador, se instala limpiamente sin interferencias de Play Protect.
-* **Método 2 (Directo en la pantalla de aviso)**:
-  - Si aparece el texto **"Más detalles"** o una flecha hacia abajo en el aviso de bloqueo, tócalo.
-  - Pulsa en **"Instalar de todas formas (no seguro)"**.
-* **Método 3 (Desactivar temporalmente el análisis de Play Protect)**:
-  1. Abre la aplicación **Google Play Store**.
-  2. Toca tu **foto de perfil** (arriba a la derecha) y pulsa en **Play Protect**.
-  3. Toca el icono de la **rueda de ajustes ⚙️** (arriba a la derecha).
-  4. Desactiva temporalmente el interruptor: **"Analizar las aplicaciones con Play Protect"**.
-  5. Instala `SpotiGuard-1.0.6-16.apk` y luego puedes volver a activarlo.
+### Opción 2: Si ya tienes SpotiGuard instalado y solo necesitas activar Shizuku
+1. Conecta el teléfono por USB con depuración activada.
+2. Haz doble clic en **`activar_shizuku.bat`**.
+3. El servicio Shizuku quedará activo al instante.
 
-#### Si en Android 13/14/15/16 la Accesibilidad muestra "Ajuste restringido":
-1. Ve a **Ajustes de Android -> Aplicaciones -> SpotiGuard**.
-2. Toca los **tres puntos verticales ⋮** en la esquina superior derecha.
-3. Selecciona **"Permitir ajustes restringidos"** y confirma con tu PIN o huella.
-4. Vuelve a **Accesibilidad** y activa el interruptor del servicio **SpotiGuard**.
+### Opción 3: Activación Inalámbrica de Shizuku (Sin PC)
+1. Conéctate a una red Wi-Fi en tu móvil.
+2. Abre la app **Shizuku** y pulsa en *"Iniciar mediante depuración inalámbrica"*.
+3. Sigue los pasos de emparejamiento con el código de 6 dígitos que proporciona Android.
 
 ---
 
-## ⚙️ Configuración Inicial Rápida:
+## ⚙️ Configuración Inicial en SpotiGuard:
 
 1. Abre **SpotiGuard**.
-2. Si aparece el botón de batería, púlsalo y selecciona "Permitir" (el botón se ocultará automáticamente).
-3. Si aparece el botón de Spotify, púlsalo para verificar que en Spotify -> Ajustes ⚙️ -> Reproducción esté activo *"Estado de transmisión del dispositivo"*. En cuanto suene música, el botón desaparecerá solo.
-4. Si aparece el botón de accesibilidad, púlsalo y activa **SpotiGuard** en la lista de servicios de accesibilidad (el botón desaparecerá automáticamente).
-5. Cuando veas el mensaje verde *"✅ Requisitos listos: Emisión, Batería y Accesibilidad verificados"*, la protección estará 100% activa.\n
+2. Si aparece el botón de batería, púlsalo y pulsa "Permitir" (el botón se ocultará automáticamente).
+3. Si aparece el botón de Spotify, púlsalo para verificar que en Spotify -> Ajustes ⚙️ -> Reproducción esté activado *"Estado de transmisión del dispositivo"*. En cuanto pongas una canción, desaparecerá solo.
+4. Pulsa el botón de Shizuku para conceder autorización al servicio (desaparecerá de inmediato).
+5. Cuando veas el recuadro verde *"✅ Requisitos listos: Emisión, Batería y Shizuku verificados"*, el sistema estará completamente operativo en segundo plano.

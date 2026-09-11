@@ -24,8 +24,11 @@ import com.google.android.material.button.MaterialButton
 import com.spotiskip.guardian.services.SpotiGuardAccessibilityService
 import com.spotiskip.guardian.services.SpotiGuardService
 import com.spotiskip.guardian.utils.SpotifyController
+import rikka.shizuku.Shizuku
 
 class MainActivity : AppCompatActivity() {
+
+    private val SHIZUKU_REQUEST_CODE = 1002
 
     private lateinit var tvStatusBadge: TextView
     private lateinit var tvCurrentTrack: TextView
@@ -100,8 +103,33 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private val shizukuPermissionListener = Shizuku.OnRequestPermissionResultListener { requestCode, grantResult ->
+        if (requestCode == SHIZUKU_REQUEST_CODE) {
+            if (grantResult == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "✅ Cierre silencioso tipo PC activado con éxito", Toast.LENGTH_SHORT).show()
+            }
+            updateRequirementsUI()
+        }
+    }
+
+    private val shizukuBinderReceivedListener = Shizuku.OnBinderReceivedListener {
+        updateRequirementsUI()
+    }
+
+    private val shizukuBinderDeadListener = Shizuku.OnBinderDeadListener {
+        updateRequirementsUI()
+    }
+
     override fun onResume() {
         super.onResume()
+        try {
+            Shizuku.addRequestPermissionResultListener(shizukuPermissionListener)
+            Shizuku.addBinderReceivedListener(shizukuBinderReceivedListener)
+            Shizuku.addBinderDeadListener(shizukuBinderDeadListener)
+        } catch (e: Exception) {
+            // Shizuku no disponible aún
+        }
+
         updateServiceUI(SpotiGuardService.isRunning)
         updateStats()
         updateRequirementsUI()
@@ -116,6 +144,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
+        try {
+            Shizuku.removeRequestPermissionResultListener(shizukuPermissionListener)
+            Shizuku.removeBinderReceivedListener(shizukuBinderReceivedListener)
+            Shizuku.removeBinderDeadListener(shizukuBinderDeadListener)
+        } catch (e: Exception) {
+            // Ignorar
+        }
         try {
             unregisterReceiver(updateReceiver)
         } catch (e: Exception) {
@@ -166,17 +201,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnAccessibilityService.setOnClickListener {
-            Toast.makeText(
-                this,
-                "En Ajustes -> Accesibilidad -> Aplicaciones instaladas:\nDesactiva y vuelve a activar SpotiGuard",
-                Toast.LENGTH_LONG
-            ).show()
-            try {
-                val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                startActivity(intent)
-            } catch (e: Exception) {
-                Toast.makeText(this, "Abre Ajustes -> Accesibilidad y activa SpotiGuard", Toast.LENGTH_SHORT).show()
-            }
+            handleShizukuClick()
         }
 
         btnOpenSpotify.setOnClickListener {
@@ -190,6 +215,37 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun handleShizukuClick() {
+        try {
+            if (Shizuku.pingBinder()) {
+                if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(this, "✅ Cierre silencioso ya está autorizado", Toast.LENGTH_SHORT).show()
+                    updateRequirementsUI()
+                } else {
+                    Shizuku.requestPermission(SHIZUKU_REQUEST_CODE)
+                }
+                return
+            }
+        } catch (e: Exception) {
+            // Shizuku no activo
+        }
+
+        showShizukuInfoDialog()
+    }
+
+    private fun showShizukuInfoDialog() {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("🔌 Cierre Silencioso Instantáneo")
+            .setMessage(
+                "Para forzar el cierre de Spotify en segundo plano sin que se abra ninguna pantalla de Ajustes, SpotiGuard usa Shizuku.\n\n" +
+                "1. Conecta tu móvil al ordenador con el cable USB.\n" +
+                "2. En la carpeta de SpotiGuard en tu PC, haz doble clic en 'activar_shizuku.bat'.\n" +
+                "3. En 2 segundos quedará activado y listo para cerrar anuncios como en PC."
+            )
+            .setPositiveButton("Entendido", null)
+            .show()
+    }
+
     private fun isBatteryOptimizedIgnored(context: Context): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val pm = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
@@ -199,22 +255,38 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun isAccessibilityServiceEnabled(context: Context): Boolean {
-        // Debe estar la instancia viva conectada para garantizar que puede cerrar los anuncios
-        return SpotiGuardAccessibilityService.isServiceRunning()
+    private fun isPrivilegedForceStopReady(): Boolean {
+        if (SpotifyController.tryRootForceStop()) return true
+        return try {
+            Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+        } catch (e: Exception) {
+            false
+        }
     }
 
     private fun updateRequirementsUI() {
         val prefs = getSharedPreferences("spotiguard_prefs", Context.MODE_PRIVATE)
         val broadcastConfigured = prefs.getBoolean("spotify_broadcast_enabled", false)
         val batteryOptimized = isBatteryOptimizedIgnored(this)
-        val accessibilityConfigured = isAccessibilityServiceEnabled(this) || SpotifyController.tryRootForceStop()
+        val privilegedReady = isPrivilegedForceStopReady()
 
         btnSpotifySettings.visibility = if (broadcastConfigured) View.GONE else View.VISIBLE
         btnBatteryOptimization.visibility = if (batteryOptimized) View.GONE else View.VISIBLE
-        btnAccessibilityService.visibility = if (accessibilityConfigured) View.GONE else View.VISIBLE
+        btnAccessibilityService.visibility = if (privilegedReady) View.GONE else View.VISIBLE
 
-        if (broadcastConfigured && batteryOptimized && accessibilityConfigured) {
+        if (!privilegedReady) {
+            try {
+                if (Shizuku.pingBinder()) {
+                    btnAccessibilityService.text = "⚡ Conceder Permiso Shizuku a SpotiGuard"
+                } else {
+                    btnAccessibilityService.text = "3. Activar Cierre Silencioso (Shizuku)"
+                }
+            } catch (e: Exception) {
+                btnAccessibilityService.text = "3. Activar Cierre Silencioso (Shizuku)"
+            }
+        }
+
+        if (broadcastConfigured && batteryOptimized && privilegedReady) {
             layoutRequirementsSuccess.visibility = View.VISIBLE
         } else {
             layoutRequirementsSuccess.visibility = View.GONE
