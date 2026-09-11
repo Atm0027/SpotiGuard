@@ -103,3 +103,38 @@ Esta es la opción para usar SpotiGuard sin depender de ningún ordenador ni cab
 3. Si aparece el botón de Spotify, púlsalo para verificar que en Spotify -> Ajustes ⚙️ -> Reproducción esté activado *"Estado de transmisión del dispositivo"*. En cuanto pongas una canción, desaparecerá solo.
 4. Pulsa el botón de Shizuku para conceder autorización al servicio (desaparecerá de inmediato).
 5. Cuando veas el recuadro verde *"✅ Requisitos listos: Emisión, Batería y Shizuku verificados"*, el sistema estará completamente operativo en segundo plano.
+
+---
+
+## 🛡️ Compatibilidad con Samsung One UI 6 / 6.1 (Bloqueador Automático / Auto Blocker)
+
+> [!WARNING]
+> **Aviso Crítico para Dispositivos Samsung Galaxy (One UI 6.0+)**:
+> Si tienes activado el **Bloqueador Automático** (*Ajustes > Seguridad y privacidad > Bloqueador automático*), Samsung Knox bloquea activamente:
+> 1. La **Depuración inalámbrica** (queda desactivada o inaccesible).
+> 2. La ejecución de comandos por cable USB (**ADB**).
+> 3. La persistencia de cualquier proceso con privilegios de sistema (`UID 2000`), terminando automáticamente el servidor de **Shizuku** a los pocos minutos o al desconectar el cable.
+>
+> **¿Qué implica esto para SpotiGuard?**
+> En Android, una aplicación estándar no puede cerrar forzosamente el proceso de otra app en reproducción sin los privilegios de Shell que proporciona Shizuku. Por tanto:
+> - Si deseas utilizar SpotiGuard en tu Samsung: debes **desactivar el Bloqueador Automático** (*Ajustes > Seguridad y privacidad > Bloqueador automático -> Desactivado*).
+> - Si por políticas de seguridad necesitas mantener el Bloqueador Automático de Samsung activado al 100%: consulta la sección de **Alternativas Recomendadas** a continuación.
+
+---
+
+## 🌟 Alternativas Recomendadas con Bloqueador Automático Activo
+
+Si requieres mantener el **Bloqueador Automático de Samsung** encendido de forma ininterrumpida y no puedes usar Shizuku/ADB:
+
+1. **Spotube (Recomendada — Conexión con tu cuenta de Spotify sin anuncios)**:
+   - Cliente Open Source nativo para Android ([GitHub](https://github.com/KRTirtho/spotube)).
+   - Inicias sesión con tu cuenta oficial de Spotify: sincroniza tus playlists, biblioteca y recomendaciones.
+   - Reproduce el stream en alta calidad vía YouTube Music / Piped con **0 anuncios de audio y vídeo** y reproducción en segundo plano.
+   - No requiere Shizuku, ni Root, ni permisos de accesibilidad.
+
+2. **RiMusic / ViMusic (Catálogo completo de música libre)**:
+   - Apps nativas Open Source con el catálogo de YouTube Music.
+   - Cero publicidad, letras sincronizadas, descarga offline de música y posibilidad de importar listas de Spotify.
+
+3. **Spotify Premium (Familiar / Compartido)**:
+   - La vía oficial más directa mediante suscripciones compartidas (~2,50 €/mes).

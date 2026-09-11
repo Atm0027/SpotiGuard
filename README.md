@@ -141,12 +141,20 @@ Ads Spotify/
         │   │   ├── BootReceiver.kt          # Auto-arranque al encender el teléfono
         │   │   └── SpotifyLaunchReceiver.kt # Auto-activación al recibir emisiones de Spotify
         │   ├── services/
-        │   │   ├── SpotiGuardService.kt               # Foreground Service con Watchdog de fin de pista
-        │   │   └── SpotiGuardAccessibilityService.kt  # Servicio de accesibilidad para forzar cierre rápido
+        │   │   └── SpotiGuardService.kt     # Foreground Service con Watchdog, Shizuku y Triple Play Dispatch
         │   └── utils/
         │       └── SpotifyController.kt     # Cierre forzoso, Root, relanzamiento y play
         └── res/                   # Layouts con autocomprobación dinámica de requisitos
 ```
+
+---
+
+## 🛡️ Compatibilidad con Samsung Galaxy (Bloqueador Automático / Knox)
+
+En dispositivos Samsung con **One UI 6+**, la función **Bloqueador Automático** (*Ajustes > Seguridad y privacidad > Bloqueador automático*) restringe la depuración USB e inalámbrica y termina automáticamente los procesos ADB en segundo plano (como Shizuku).
+
+* **Para usar SpotiGuard en Samsung**: Es necesario mantener el Bloqueador Automático desactivado para que Shizuku pueda mantener vivos los permisos de cierre forzoso en segundo plano.
+* **Alternativa si mantienes el Bloqueador activo**: Se recomienda el uso de clientes Open Source como **Spotube** (conecta a tu cuenta de Spotify y reproduce sin publicidad) o **RiMusic**, detallados en la [Guía de Android](mobile/README_ANDROID.md).
 
 ---
 
