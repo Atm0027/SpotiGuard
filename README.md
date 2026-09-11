@@ -157,12 +157,12 @@ Ads Spotify/
 
 ---
 
-## 🛡️ Compatibilidad con Samsung Galaxy (Bloqueador Automático / Knox)
+## 🛡️ Compatibilidad con Samsung Galaxy (Bloqueador Automático / Knox — One UI 6 a 8.5 / Android 16)
 
-En dispositivos Samsung con **One UI 6+**, la función **Bloqueador Automático** (*Ajustes > Seguridad y privacidad > Bloqueador automático*) restringe la depuración USB e inalámbrica y termina automáticamente los procesos ADB en segundo plano (como Shizuku).
+En dispositivos Samsung modernos con **One UI 6.x hasta One UI 8.5 (Android 16, SDK 36)**, la función **Bloqueador Automático** (*Ajustes > Seguridad y privacidad > Bloqueador automático*) implementa la seguridad más estricta de Samsung Knox: restringe la depuración USB e inalámbrica y termina automáticamente los procesos ADB en segundo plano (como Shizuku). Asimismo, Android 16 restringe de raíz los servicios de audio en primer plano (`AppOps START_FOREGROUND`) en aplicaciones obsoletas como Spotube.
 
 * **Para usar SpotiGuard en Samsung**: Es necesario mantener el Bloqueador Automático desactivado para que Shizuku pueda mantener vivos los permisos de cierre forzoso en segundo plano.
-* **Alternativa si mantienes el Bloqueador activo**: Se recomienda el uso de clientes Open Source como **Spotube** (conecta a tu cuenta de Spotify y reproduce sin publicidad) o **RiMusic**, detallados en la [Guía de Android](mobile/README_ANDROID.md).
+* **Alternativa si mantienes el Bloqueador activo en Android 16**: Se recomienda **Metrolist** (arquitectura Jetpack Media3 nativa para Android 16, cero errores 401, importación de playlists de Spotify y cero publicidad), detallado en la [Guía de Android](mobile/README_ANDROID.md).
 
 ---
 

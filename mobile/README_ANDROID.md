@@ -106,19 +106,20 @@ Esta es la opción para usar SpotiGuard sin depender de ningún ordenador ni cab
 
 ---
 
-## 🛡️ Compatibilidad con Samsung One UI 6 / 6.1 (Bloqueador Automático / Auto Blocker)
+## 🛡️ Compatibilidad con Samsung One UI 6 a 8.5 / Android 16 (Bloqueador Automático / Auto Blocker)
 
 > [!WARNING]
-> **Aviso Crítico para Dispositivos Samsung Galaxy (One UI 6.0+)**:
-> Si tienes activado el **Bloqueador Automático** (*Ajustes > Seguridad y privacidad > Bloqueador automático*), Samsung Knox bloquea activamente:
-> 1. La **Depuración inalámbrica** (queda desactivada o inaccesible).
+> **Aviso Crítico para Dispositivos Samsung Galaxy (One UI 6.0 a 8.5 / Android 16 - SDK 36)**:
+> Si tienes activado el **Bloqueador Automático** (*Ajustes > Seguridad y privacidad > Bloqueador automático*), Samsung Knox implementa un endurecimiento extremo de seguridad:
+> 1. La **Depuración inalámbrica** (queda desactivada o bloqueada).
 > 2. La ejecución de comandos por cable USB (**ADB**).
 > 3. La persistencia de cualquier proceso con privilegios de sistema (`UID 2000`), terminando automáticamente el servidor de **Shizuku** a los pocos minutos o al desconectar el cable.
+> 4. **Restricción de Audio en Android 16**: Android 16 bloquea de raíz los servicios de audio de aplicaciones obsoletas que no utilicen Jetpack Media3 (`AppOps START_FOREGROUND` denegado).
 >
 > **¿Qué implica esto para SpotiGuard?**
 > En Android, una aplicación estándar no puede cerrar forzosamente el proceso de otra app en reproducción sin los privilegios de Shell que proporciona Shizuku. Por tanto:
 > - Si deseas utilizar SpotiGuard en tu Samsung: debes **desactivar el Bloqueador Automático** (*Ajustes > Seguridad y privacidad > Bloqueador automático -> Desactivado*).
-> - Si por políticas de seguridad necesitas mantener el Bloqueador Automático de Samsung activado al 100%: consulta la sección de **Alternativas Recomendadas** a continuación.
+> - Si necesitas mantener el Bloqueador Automático de Samsung activado al 100% en Android 16: utiliza **Metrolist**, verificado y compatible con Media3.
 
 ---
 
