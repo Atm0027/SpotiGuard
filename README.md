@@ -101,6 +101,12 @@ Ubicada en la carpeta [`mobile/`](mobile/). Proyecto nativo completo en **Kotlin
 * **Descarga directa**: **[Descargar SpotiGuard-1.0.4-14.apk (v1.0.4-14)](https://github.com/Atm0027/SpotiGuard/releases/download/v1.0.4-14/SpotiGuard-1.0.4-14.apk)** *(4.74 MB)*.
 * **Firma Oficial**: Almacén de claves RSA 2048-bit (`CN=SpotiGuard`) con esquemas **v2** y **v3**.
 
+#### 🛑 ¿Android muestra "Bloqueada por Play Protect"? (Solución en 10s):
+Debido a que SpotiGuard integra un Servicio de Accesibilidad para forzar el cierre de Spotify automáticamente, Google Play Protect lo clasifica como advertencia preventiva en descargas fuera de la tienda:
+1. **Opción Rápida**: Pulsa en **"Más detalles"** y luego en **"Instalar de todas formas (no seguro)"**.
+2. **Si no te deja pulsar**: Abre **Google Play Store -> Perfil -> Play Protect -> Ajustes ⚙️** y desactiva temporalmente *"Analizar las aplicaciones con Play Protect"*. Tras instalarlo, puedes volver a activarlo.
+3. **Instalación USB sin advertencias**: Conecta el móvil al PC y ejecuta `instalar_android.bat` para instalar directamente por ADB.
+
 ---
 
 ## 🏷️ Sistema de Control de Versiones Heredado de JARVIS

@@ -50,7 +50,34 @@ Aplicación nativa de Android que detecta en tiempo real los anuncios de Spotify
 #### Opción 2: Instalación Directa en 1 Clic desde el PC (Script ADB)
 1. Conecta tu teléfono al ordenador con cable USB y asegúrate de tener activada la **Depuración por USB**.
 2. En la carpeta del proyecto en tu PC, haz doble clic en **`instalar_android.bat`**.
-3. El script detectará tu dispositivo e instalará el APK directamente en el móvil.
+3. El script detectará tu dispositivo e instalará el APK directamente en el móvil (las instalaciones ADB nunca son bloqueadas por Play Protect).
+
+---
+
+### 🛑 Si Android muestra "Bloqueada por Play Protect" (Causa y Solución en 10s)
+
+#### ¿Por qué salta el aviso?
+A partir de 2024, Google Play Protect introdujo un sistema de protección automática que **bloquea la instalación de cualquier aplicación descargada fuera de Google Play que declare permisos de Accesibilidad (`BIND_ACCESSIBILITY_SERVICE`)**, clasificándola automáticamente como riesgo porque la accesibilidad permite automatizar toques en pantalla (que en SpotiGuard se usan exclusivamente para forzar el cierre de Spotify).
+
+#### Cómo resolverlo en tu teléfono:
+* **Método 1 (Directo en la pantalla de aviso)**:
+  - Si aparece el texto **"Más detalles"** o una flecha hacia abajo en el aviso de bloqueo, tócalo.
+  - Pulsa en **"Instalar de todas formas (no seguro)"**.
+* **Método 2 (Desactivar temporalmente el análisis de Play Protect)**:
+  1. Abre la aplicación **Google Play Store**.
+  2. Toca tu **foto de perfil** (arriba a la derecha) y pulsa en **Play Protect**.
+  3. Toca el icono de la **rueda de ajustes ⚙️** (arriba a la derecha).
+  4. Desactiva el interruptor: **"Analizar las aplicaciones con Play Protect"**.
+  5. Vuelve a pulsar el archivo `SpotiGuard-1.0.4-14.apk` e instálalo normalmente.
+  6. *(Opcional)*: Una vez instalada, puedes volver a activar Play Protect.
+* **Método 3 (Instalación por ADB sin advertencias)**:
+  - Conecta el móvil al PC por USB y ejecuta `instalar_android.bat`. Al ser una instalación directa de desarrollo, Play Protect no interfiere.
+
+#### Si en Android 13/14+ la Accesibilidad dice "Ajuste restringido":
+1. Ve a **Ajustes de Android -> Aplicaciones -> SpotiGuard**.
+2. Toca los **tres puntos verticales ⋮** en la esquina superior derecha.
+3. Selecciona **"Permitir ajustes restringidos"** y confirma con tu PIN o huella.
+4. Vuelve a **Accesibilidad** y activa el interruptor de SpotiGuard.
 
 ---
 
